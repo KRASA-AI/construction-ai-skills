@@ -13,14 +13,23 @@ This repo is a complete AI toolkit for construction. Every skill is a standalone
 
 | Skill | What it does | Time saved |
 |-------|-------------|------------|
-| 📋 RFI Response Drafter | Draft a clear RFI response referencing spec sections, drawings, and prior decisions. | ~20 min/RFI |
-| 📝 Daily Log Generator | Turn foreman notes into a formatted daily report with weather, crew, and progress. | ~15 min/day |
-| 🔍 Submittal Review Summary | Summarize submittal packages and flag deviations from specs. | ~20 min/submittal |
-| 📄 Change Order Drafter | Document scope changes with cost and schedule impact for owner approval. | ~25 min/CO |
-| 🦺 Safety Plan Builder | Generate a site-specific safety plan based on work activities and conditions. | ~30 min/plan |
-| ✅ Punch List Organizer | Turn walkthrough notes into an organized punch list with photos, locations, and assignments. | ~20 min/list |
+| Daily Log Generator | Turn the superintendent's or foreman's raw field notes into a properly formatted daily construction report covering weather, crew and equipment on site, work performed (by location/area), materials delivered, deliveries scheduled, visitors, safety observations, delays/disruptions, quantities installed, and photos — structured to be admissible as contemporaneous project documentation if a dispute arises. | ~20 min/day |
+| Punch List Organizer | Turn raw walkthrough notes — the PM's phone voice memo, the architect's marked-up set, or a stream of photo captions — into a structured punch list organized by location (floor/room) and by responsible trade, with clear item descriptions, severity, assigned party, required completion date, photo references, and a status column ready to track to close-out and substantial completion. | ~30 min/walkthrough |
+| RFI Response Drafter | Draft a clear, defensible Request for Information (RFI) response that cites specific spec sections, drawing details, and prior project decisions — structured so the receiving party (architect, engineer, GC, sub, or owner) can act on it without a follow-up round-trip. | ~25 min/RFI |
+| Safety Plan Builder | Generate a site-specific safety plan (SSSP) for a construction project that covers hazard identification, mitigation measures, emergency procedures, and regulatory compliance — formatted for jobsite posting and client/GC submittal. | ~45 min/plan |
+| Submittal Review Summary | Summarize submittal packages and flag deviations from specs. | ~20 min/submittal |
+| Value Engineering Analyzer | Review a project scope, estimate, or specification package and produce a structured list of value engineering (VE) options that reduce cost without sacrificing function, durability, or code compliance — each with an estimated savings range, trade-off notes, and owner decision points. | ~90 min/package |
+| Bid Proposal Generator | Generate a persuasive, professionally structured construction bid proposal from project details, scope notes, and cost estimates — ready for client review with minimal editing. | ~45 min/proposal |
+| Estimate Simplifier | Rewrite a technical construction cost estimate into clear, client-friendly language that homeowners or non-technical stakeholders can understand — reducing confusion, callbacks, and price objections. | ~15 min/estimate |
+| Homeowner Update Drafter | Draft clear, plain-language project updates for homeowners and residential clients during a remodel, custom build, or occupied renovation — tuned for the situation (weekly progress, delay notification, change order preview, site access request, punch list close-out) and in the company's voice. | ~20 min/update |
+| Change Order Drafter | Document scope changes with cost and schedule impact for owner approval. | ~25 min/CO |
+| Contract Risk Reviewer | Analyze a construction contract (prime contract, subcontract, or purchase order) and produce a plain-language risk summary that flags problematic clauses, missing protections, and compliance gaps — so the user can negotiate or escalate before signing. | ~30 min/contract |
+| Pay Application Reviewer | Review a construction pay application (AIA G702 cover sheet and G703 continuation sheet, or equivalent custom forms) and flag math errors, inconsistent percent-complete values, retainage miscalculations, missing lien waivers, stored-material documentation gaps, and contract-term conflicts — before it goes to the owner, lender, or GC for certification. | ~40 min/pay app |
+| Email Drafter | Turn rough notes, bullet points, or verbal context into a professional, ready-to-send email that matches your company's voice — tailored for common construction communication scenarios. | ~10 min/use |
+| Meeting Summarizer | Turn construction meeting notes — whether typed, voice-transcribed, or bullet points — into a structured summary with clear action items, decisions, and follow-ups that can be distributed to stakeholders. | ~15 min/use |
+| Review Responder | Craft professional responses to online reviews — both positive and negative. | ~10 min/use |
 
-**Total time saved per use: ~130+ minutes across all skills.**
+**Total time saved per use: ~440+ minutes across all skills.**
 
 ## Quick Start
 
