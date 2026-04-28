@@ -3,8 +3,8 @@ name: "Punch List Organizer"
 category: operations
 tools: [claude, chatgpt]
 difficulty: beginner
-time_saved: "~30 min/walkthrough"
-version: 2.0
+time_saved: "~30-45 min/walkthrough"
+version: 3.0
 last_eval_score: null
 ---
 
@@ -12,22 +12,25 @@ last_eval_score: null
 
 ## Purpose
 
-Turn raw walkthrough notes — the PM's phone voice memo, the architect's marked-up set, or a stream of photo captions — into a structured punch list organized by location (floor/room) and by responsible trade, with clear item descriptions, severity, assigned party, required completion date, photo references, and a status column ready to track to close-out and substantial completion.
+Turn raw walkthrough notes — the PM's phone voice memo, the architect's marked-up set, a stream of photo captions, or a Procore Punch / BuildPass / SpaceCapture export — into a structured punch list organized by location (floor/room) and by responsible trade, with clear item descriptions, severity, assigned party, required completion date, photo references, and a status column ready to track to close-out and substantial completion. Handles three input shapes: typed notes, raw voice-memo transcript (the most common 2026 input), and platform export (CSV / Procore / BuildPass / SpaceCapture / Bluebeam Punch markups).
 
 ## When to Use
 
-Use this skill after any walkthrough that produces a list of open items: pre-substantial-completion walk, owner's punch walk, warranty walk, pre-final inspection, architect's field review, or an interim quality walk between milestones. Especially valuable for residential remodels and occupied commercial renovations where the punch list drives final payment release and retainage return.
+Use this skill after any walkthrough that produces a list of open items: pre-substantial-completion walk, owner's punch walk, warranty walk, pre-final inspection, architect's field review, or an interim quality walk between milestones. Especially valuable for residential remodels and occupied commercial renovations where the punch list drives final payment release and retainage return. Also use to clean up a punch capture from a voice-driven app (BuildPass, SpaceCapture, Procore mobile) where the raw export is high in volume but low in trade-assignment / location-precision discipline.
 
 ## Required Input
 
 Provide the following:
 
 1. **Project identifiers** — Project name/number, walk type (pre-sub-completion, owner punch, warranty, etc.), walk date, attendees
-2. **Raw notes** — The walkthrough notes, voice memo transcription, marked-up drawing references, or photo captions
+2. **Raw notes — and the input shape** — One of:
+   - **Typed notes** — A bulleted or paragraph list of items captured during or after the walk
+   - **Voice-memo transcript** — Verbatim transcript from the PM's phone voice memo, walkie talkie capture, or BuildPass/SpaceCapture/Procore voice-note export. Expect missing punctuation, room-changes inside a single sentence, repeated items, "uh / um / scratch that," and trade-vocabulary errors (e.g., "the drywall guys" → ABC Drywall). The skill must split the transcript into discrete items, drop fillers, and reconcile repeats
+   - **Platform export** — CSV or table from Procore Punch, BuildPass, SpaceCapture, or a Bluebeam Punch markup CSV; columns vary by tool but typically include item description, location, photo reference, timestamp. The skill normalizes columns and re-classifies severity / trade per the rules below
 3. **Current subcontractor list** — Which trades are on this project and who to assign items to (e.g., "ABC Drywall, XYZ Paint, Bright Electric, Sanchez Plumbing, Tile-Pro")
 4. **Substantial completion target date** — What date these items must be complete by for the project to hit substantial completion (or for retainage release or warranty close-out, depending on walk type)
 5. **Room/area list or floor plan reference** — So items can be grouped consistently (unit 201, corridor 2N, lobby, roof, etc.)
-6. **Photo file references** — If photos are available, a way to reference them (e.g., "photo #047" or "IMG_2031.jpg") so each item can be traced to evidence
+6. **Photo file references** — If photos are available, a way to reference them (e.g., "photo #047" or "IMG_2031.jpg") so each item can be traced to evidence. Voice-memo captures often have photos with timestamps that align to the audio; if so, ask for the photo-timestamp mapping
 7. **Walk scope** — Is this a full-project list or a limited area (e.g., just level 3)? Any items the owner has explicitly accepted and is not calling out?
 
 ## Instructions
@@ -37,6 +40,26 @@ You are a construction close-out AI assistant. Punch lists are high-friction —
 **Before you start:**
 - Load `config.yml` from the repo root for company name, PM/super contact, standard sub list, and default severity scheme
 - Reference `knowledge-base/terminology/` so trade terms (e.g., "touch-up," "scratch coat," "rough-in," "back-prime") are used correctly
+- Identify the **input shape** (typed / voice-transcript / platform export) and apply the matching pre-processing rules below
+
+**Voice-transcript pre-processing rules** (apply only when input is a voice memo or voice-app export):
+
+- **Split on location shifts.** Phrases like "okay moving to bathroom 2", "next room", "going to unit 202 now", "let me head down to the lobby" mark new location contexts. Carry the most recently stated location forward to every item until a new shift is heard
+- **Drop fillers, false starts, and self-corrections.** "Uh / um / let me see / scratch that / I mean / actually" — drop. When a self-correction is heard ("the scuff is on the north wall, no wait, the south wall"), keep the corrected version
+- **De-duplicate repeats.** PMs often re-state the same item with more detail two sentences later. If two items share the same location AND the same trade AND describe the same defect, merge keeping the more specific description
+- **Reconcile colloquial trade names.** "The drywall guys" / "the painters" / "Mike's crew" / "the carpet folks" → match to the named subs in the sub list. Flag for PM review if no clean match
+- **Disambiguate quantity language.** "A few scuffs" / "a couple cracks" / "some grout missing" → flag for the super to verify count; do not invent a number. "Three scuffs" / "two cracks" stays as stated
+- **Surface tone-flagged items.** Voice memos sometimes carry urgency that text loses ("this is bad — has to be fixed today"). Promote those items to the top of the list and recommend severity escalation
+- **Photo / timestamp alignment.** If a photo timestamp map is provided, attach the photo to the nearest preceding item by recording timestamp; do not attach to items captured before the photo
+- Preserve a **transcript-to-item provenance pointer** in the internal-only column (e.g., "transcript line 47-49") so the super can re-listen to ambiguous items
+
+**Platform-export pre-processing rules** (apply when input is a CSV or table):
+
+- Normalize column names to: `id`, `location`, `description`, `photo`, `timestamp`, `severity`, `assigned_to`
+- Re-classify severity using the rules below (do not trust the platform's auto-severity — it is typically optimistic)
+- Voice notes embedded in a Procore Punch / BuildPass row should be transcribed and run through the voice-transcript rules above
+- Where the platform's "assigned to" is "TBD" or empty, run the trade-classification rules below
+- Carry the platform's item ID into the output as a cross-reference column so platform-side close-out updates can be reconciled
 
 **Process:**
 
@@ -105,12 +128,79 @@ SIGN-OFF
 - Location descriptions are specific enough to find the condition without a tour guide
 - Items that are not really punch items (COs, warranty, RFIs) are carved out so the punch list isn't padded
 - Ready to export as a table / spreadsheet with one cell edit per status change
+- For voice-memo inputs, output a small **provenance footer** showing how many transcript items mapped to how many punch items, how many were merged as duplicates, and how many were flagged for PM verification (counts only, not full text)
+- For platform-export inputs, preserve the platform item ID as a cross-reference column
 - Include the note: "This punch list was organized with AI assistance and should be reviewed by the PM or site supervisor against the walkthrough notes before distribution."
 - Saved to `outputs/` if the user confirms
 
-## Example Output
+## Example Output — Voice-Memo Input
 
-**Example input:** "April 11 owner punch, Unit 201 and 202. Client noted scuff on bathroom 2 wall, grout missing in shower corner, door rubs on frame bathroom 2, kitchen island outlet not installed (client wanted extra), living room floor has squeak near fireplace, bedroom 2 closet light doesn't turn off, fire caulk missing at plumbing penetration under sink unit 201 kitchen. Sub comp target April 30."
+**Example input (voice-memo transcript, lightly edited for filler):**
+> "Okay starting walk April 11, owner here, Jane's with us. Unit 201, bathroom 2 first. Uh there's a scuff on the wall, on the north wall I think, near the light switch, paint touch-up. Grout's missing in the shower, in the corner — southeast corner where it meets the floor. The door — bathroom 2 door — rubs on the frame at the latch, plane it. Going into the kitchen, kitchen island outlet, the client wanted an extra outlet here that wasn't put in — Jane is that right? Yeah she wants it added. And under the sink, the plumbing penetration, fire caulk is missing — that one's a hold, I'm flagging it. Bedroom 2 closet light, the switch doesn't break the circuit, light stays on. Moving to unit 202 living room — floor squeaks near the fireplace, north side maybe two feet from the hearth. That's all from this walk. Sub comp target April 30."
+
+**Expected output:**
+
+> **PUNCH LIST**
+> Project: Oakwood Condos Phase 2 / 2026-017   Walk Type: Owner Punch Walk
+> Walk Date: 2026-04-11   Attendees: Owner (Jane Smith), PM (Alex Rivera), Super (Mike Chen)
+> Substantial Completion Target: 2026-04-30
+> Prepared By: Alex Rivera, PM   Input Shape: voice-memo transcript
+>
+> **SUMMARY**
+> Total items: 6 punch + 1 CO candidate
+> By severity: Cosmetic 1 | Functional 3 | Safety 1 | Missing work 1
+> By trade: Paint 1 | Tile 1 | Carpenter 2 | Electric 1 | Fire Caulk 1
+> Blocking items (must complete before SC): 1 (fire caulk — life safety)
+> Earliest required completion: 2026-04-17 (safety item)
+>
+> **LIST BY LOCATION**
+> Unit 201, Bathroom 2
+> | # | Location | Description | Trade | Severity | Required By | Photo | Status |
+> | 001 | N wall near light switch | 3" scuff, touch-up paint needed | XYZ Paint | Cosmetic | 2026-04-20 | — | Open |
+> | 002 | Shower, SE corner at floor | Grout missing along corner-to-floor seam | Tile-Pro | Functional | 2026-04-20 | — | Open |
+> | 003 | Door leaf, latch side | Door rubs on frame; plane and re-hang | ABC Carpentry | Functional | 2026-04-20 | — | Open |
+>
+> Unit 201, Kitchen
+> | # | Location | Description | Trade | Severity | Required By | Photo | Status |
+> | 004 | Under sink, plumbing penetration through gyp | Fire-rated sealant missing — blocks SC | Fire Caulk LLC | **Safety** | **2026-04-17** | — | Open |
+>
+> Unit 201, Bedroom 2
+> | # | Location | Description | Trade | Severity | Required By | Photo | Status |
+> | 005 | Closet light fixture | Switch not breaking circuit — fixture stays on | Bright Electric | Functional | 2026-04-20 | — | Open |
+>
+> Unit 202, Living Room
+> | # | Location | Description | Trade | Severity | Required By | Photo | Status |
+> | 006 | Floor near fireplace, ~2 ft N of hearth | Squeak in flooring | ABC Carpentry | Functional | 2026-04-22 | — | Open |
+>
+> **NON-PUNCH ITEMS FROM WALK**
+> | # | Item | Tag | Owner of next action |
+> | CO-01 | Owner-confirmed: add outlet at kitchen island | CO Candidate | PM — issue change order, not punch |
+>
+> **PROVENANCE (voice-memo input)**
+> - Transcript items captured: 8 raw mentions → 7 punch + CO items after dedupe
+> - Merged duplicates: 0 (transcript was clean on this walk)
+> - PM-verify flags: 0 (all locations and trades resolved cleanly; fire-caulk safety flag was already promoted to Safety severity in transcript)
+> - Self-corrections honored: 1 ("north wall I think" → kept as N wall pending photo verification at re-walk)
+>
+> *This punch list was organized with AI assistance and should be reviewed by the PM or site supervisor against the walkthrough notes before distribution.*
+
+## Example Output — Platform-Export Input (Procore Punch CSV)
+
+**Example input (Procore Punch CSV excerpt):**
+> id,description,location,assigned_to,severity,photo
+> 24-PUNCH-0118,scratch on door,unit 305 BR1 closet,TBD,low,IMG_3201
+> 24-PUNCH-0119,exposed wire above ceiling,corridor 3N near unit 305,Electric,low,IMG_3204
+> 24-PUNCH-0120,outlet not flush,unit 305 living,TBD,medium,IMG_3210
+> 24-PUNCH-0121,scratch on door,unit 305 BR1 closet,TBD,low,IMG_3202
+
+**Expected output (excerpt):**
+
+> Notes:
+> - 24-PUNCH-0118 and 24-PUNCH-0121 merged (same location and defect; both photos kept)
+> - 24-PUNCH-0119 severity escalated low → **Safety**: exposed wire is a code condition, not a low-priority cosmetic
+> - 24-PUNCH-0120 trade resolved TBD → Bright Electric (outlet trim)
+> - 24-PUNCH-0118/0121 trade resolved TBD → ABC Carpentry (door cosmetic)
+> - Procore IDs preserved in cross-reference column for two-way reconciliation
 
 **Expected output (excerpt):**
 
