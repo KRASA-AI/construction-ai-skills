@@ -4,7 +4,7 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~30-45 min/walkthrough"
-version: 3.0
+version: 3.1
 last_eval_score: null
 ---
 
@@ -195,49 +195,27 @@ SIGN-OFF
 
 **Expected output (excerpt):**
 
-> Notes:
-> - 24-PUNCH-0118 and 24-PUNCH-0121 merged (same location and defect; both photos kept)
-> - 24-PUNCH-0119 severity escalated low → **Safety**: exposed wire is a code condition, not a low-priority cosmetic
-> - 24-PUNCH-0120 trade resolved TBD → Bright Electric (outlet trim)
-> - 24-PUNCH-0118/0121 trade resolved TBD → ABC Carpentry (door cosmetic)
-> - Procore IDs preserved in cross-reference column for two-way reconciliation
-
-**Expected output (excerpt):**
-
-> **PUNCH LIST**
-> Project: Oakwood Condos Phase 2 / 2026-017   Walk Type: Owner Punch Walk
-> Walk Date: 2026-04-11   Attendees: Owner (Jane Smith), PM (Alex Rivera), Super (Mike Chen)
-> Substantial Completion Target: 2026-04-30
-> Prepared By: Alex Rivera, PM
+> **PUNCH LIST (Platform-Export Excerpt)**
+> Project: Riverside Tower Phase 1 / 2026-022   Walk Type: Pre-Sub-Comp Walk
+> Walk Date: 2026-04-26   Input Shape: Procore Punch CSV
 >
-> **SUMMARY**
-> Total items: 6 punch + 1 CO candidate
-> By severity: Cosmetic 1 | Functional 3 | Safety 1 | Missing work 1
-> By trade: Paint 1 | Tile 1 | Carpenter 2 | Electric 1 | Fire Caulk 1
-> Blocking items (must complete before SC): 1 (fire caulk — life safety)
-> Earliest required completion: 2026-04-17 (safety item)
+> **PRE-PROCESSING NOTES (Platform-Export Normalization)**
+> - 24-PUNCH-0118 and 24-PUNCH-0121 merged (same location: Unit 305 BR1 closet; same defect: scratch on door; both photos IMG_3201 + IMG_3202 retained as evidence)
+> - 24-PUNCH-0119 severity escalated **low → Safety**: exposed wire above ceiling at corridor 3N is a 2017 NEC § 300.4 code condition and a life-safety condition, not a low-priority cosmetic. Required-by date pulled forward to **2026-04-29** (≤ 3 working days from walk for safety items)
+> - 24-PUNCH-0120 trade resolved TBD → Bright Electric (outlet trim is a finish-electric scope under 26 27 26)
+> - 24-PUNCH-0118/0121 trade resolved TBD → ABC Carpentry (door cosmetic is a finish-carpentry scope)
+> - Procore IDs preserved in the cross-reference column so platform-side close-out updates reconcile two-way
 >
-> **LIST BY LOCATION**
-> Unit 201, Bathroom 2
-> | # | Location | Description | Trade | Severity | Required By | Photo | Status |
-> | 001 | N wall near light switch | 3" scuff, touch-up paint needed | XYZ Paint | Cosmetic | 2026-04-20 | — | Open |
-> | 002 | Shower, SE corner | Grout missing along 4" seam at floor | Tile-Pro | Functional | 2026-04-20 | — | Open |
-> | 003 | Door leaf | Door rubs on frame at latch side, plane/re-hang | ABC Carpentry | Functional | 2026-04-20 | — | Open |
+> **NORMALIZED LIST (3 rows out of 4 input rows; 2 merged into 1)**
+> | # | Procore ID | Location | Description | Trade | Severity | Required By | Photo | Status |
+> | 001 | 24-PUNCH-0118 / 0121 | Unit 305, BR1 closet, door leaf | Scratch on door surface (two photo views captured) | ABC Carpentry | Cosmetic | 2026-05-06 | IMG_3201, IMG_3202 | Open |
+> | 002 | 24-PUNCH-0119 | Corridor 3N near Unit 305, above ceiling | Exposed wire above ceiling — life-safety per NEC § 300.4 | Bright Electric | **Safety** | **2026-04-29** | IMG_3204 | Open |
+> | 003 | 24-PUNCH-0120 | Unit 305, living room | Outlet not flush with finished surface (gap to wall plate) | Bright Electric | Functional | 2026-05-06 | IMG_3210 | Open |
 >
-> Unit 201, Kitchen
-> | # | Location | Description | Trade | Severity | Required By | Photo | Status |
-> | 004 | Under sink, plumbing penetration thru gyp | Fire-rated sealant missing — blocks SC | Fire Caulk LLC | **Safety** | **2026-04-17** | — | Open |
->
-> Unit 201, Bedroom 2
-> | # | Location | Description | Trade | Severity | Required By | Photo | Status |
-> | 005 | Closet light fixture | Switch not breaking circuit — fixture stays on | Bright Electric | Functional | 2026-04-20 | — | Open |
->
-> Unit 202, Living Room
-> | # | Location | Description | Trade | Severity | Required By | Photo | Status |
-> | 006 | Floor near fireplace (north side) | Squeak in flooring, approx 2 ft from hearth | ABC Carpentry | Functional | 2026-04-22 | — | Open |
->
-> **NON-PUNCH ITEMS FROM WALK**
-> | # | Item | Tag | Owner of next action |
-> | CO-01 | Client request: add outlet at kitchen island | CO Candidate | PM — issue change order, not punch |
+> **PROVENANCE (platform-export input)**
+> - Input rows: 4 → output rows: 3 (1 merge)
+> - Severity re-classifications: 1 (low → Safety; platform default optimistic)
+> - Trade resolutions (TBD → named): 3
+> - Procore IDs preserved as cross-reference column for two-way close-out reconciliation
 >
 > *This punch list was organized with AI assistance and should be reviewed by the PM or site supervisor against the walkthrough notes before distribution.*
