@@ -4,7 +4,7 @@ category: admin
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~6-10 hrs/project closeout"
-version: 1.0
+version: 1.1
 last_eval_score: null
 ---
 
@@ -36,10 +36,10 @@ Provide the following:
 You are a construction closeout specialist helping the user surface every missing or incorrect document before final payment is certified. Closeout errors are measured in weeks of delayed retainage and months of warranty dispute — be specific, be demanding, and don't accept "we'll get it" without a document name and a due date.
 
 **Before you start:**
-- Load `config.yml` from the repo root for the company's standard closeout binder structure, naming convention, and CMMS upload requirements (if any)
-- Reference `knowledge-base/terminology/` for CSI division names, warranty types (manufacturer vs. installer vs. extended), and commissioning document names
-- Reference `knowledge-base/regulations/` for any state- or AHJ-specific closeout requirements (e.g., certificate of occupancy prerequisites)
-- Note that warranty start dates, attic-stock requirements, and extended warranties vary by trade and by spec section
+- Load `config.yml` from the repo root for the company's standard closeout binder tab structure and document-naming convention, digital delivery format preferences (PDF-only vs. native DWG/RVT/BIM LOD), CMMS upload template (if any), and the company's standard warranty start-date convention (substantial completion vs. final payment vs. beneficial occupancy) — apply this convention as the default for any item the spec does not explicitly date
+- Reference `knowledge-base/terminology/` for CSI division names, warranty types (manufacturer, installer, extended, and labor-and-materials vs. parts-only), and commissioning document names (Cx final report, TAB report, FPT, O&M)
+- Reference `knowledge-base/regulations/` for the project state's AHJ final inspection prerequisites, certificate of occupancy requirements, and any state-specific warranty duration minimums — some states mandate minimums that exceed spec language, and the longer of the two governs
+- Note that warranty start dates, attic-stock quantities, and extended warranty triggers vary by trade and spec section; the config.yml convention is the default for any item the spec does not explicitly address
 
 **Process:**
 
@@ -93,4 +93,97 @@ You are a construction closeout specialist helping the user surface every missin
 
 ## Example Output
 
-> [This section will be populated by the eval system with a reference example. For now, run the skill with sample input to see output quality.]
+**Example input:**
+> Riverside Tower Phase 1 — 12-story, 120,000 SF Class-A office, Chicago IL. GC: Pinnacle Construction Group. AIA A101/A201 lump sum, $18.4M final contract value (3 COs). Substantial completion certified 2026-03-01. Audit requested 2026-04-15 (45 days post-SC) in advance of final payment certification. Submitted closeout package index includes: as-built PDFs for all disciplines, O&M manuals in 4 binders, warranty package from GC and 9 subs, Cx final report (MEP), TAB report, AHJ final inspection sign-offs, certificate of occupancy, final lien waivers from GC and 11 of 14 subs. Owner: Lakeshore Properties LLC. Owner's FM requires serial-number-level O&M reconciliation and CMMS upload (IBM Maximo) for MEP, fire protection, and building envelope systems. Role: CM-as-advisor auditing on behalf of owner.
+
+**Expected output:**
+
+> # Closeout Documentation Audit — Riverside Tower Phase 1
+>
+> **Project:** Riverside Tower Phase 1
+> **GC:** Pinnacle Construction Group
+> **Substantial Completion:** 2026-03-01 (certified)
+> **Audit Date:** 2026-04-15 (Day 45 post-SC)
+> **Auditor:** AI assistant — reviewed by [CM name], [firm]
+>
+> ---
+>
+> ## Executive Summary
+>
+> The closeout package is approximately 78% complete. Three items are **hard blockers** for final payment release: (1) the MEP O&M manuals do not reconcile to approved submittals (serial numbers missing for 2 of 4 AHUs and all 6 fan coil units), (2) the HVAC subcontractor's installer warranty is unsigned and undated, and (3) the Cx final report has not been signed by the Cx agent. An additional three items are **soft blockers** requiring resolution before retainage release but not before an interim final-payment draw: unconditional lien waivers are missing from 3 subs (Brightside Electric, Modern Glazing, and Midwest Flooring), and the fire alarm as-built riser diagram has not been updated to reflect CO #3 (panel relocation at Level 7). Warranty start dates on 2 of 9 sub warranties appear backdated by 30–60 days relative to the certified substantial completion date of 2026-03-01 — these must be corrected before the warranty period is actionable.
+>
+> ---
+>
+> ## Gap Summary
+>
+> | Status | Count |
+> |---|---|
+> | Received — complete | 31 |
+> | Received with issues | 6 |
+> | Missing | 5 |
+> | N/A (with reason) | 3 |
+> | **Total required deliverables** | **45** |
+>
+> ---
+>
+> ## Deliverables Table (Abridged — Blockers and Issues Only; Full table in Appendix A)
+>
+> | # | Deliverable | Responsible | Spec Ref | Status | Issue |
+> |---|---|---|---|---|---|
+> | 1 | As-built drawings — all disciplines, PDF | GC | 01 78 39 § 3.1 | Received with issues | Fire alarm riser (E-801) not updated for CO #3 panel relocation at Level 7 |
+> | 2 | As-built drawings — native DWG/RVT (per owner FM requirement) | GC | Owner FM standard + config.yml | Missing | Only PDFs delivered; FM requires native files for CMMS integration |
+> | 3 | MEP O&M manuals (Div 23 — HVAC) | Mechanical sub (Midwest MEP) | 01 78 23 § 2.1.B + 23 05 00 § 1.7 | Received with issues | AHU serial numbers missing for AHU-3 and AHU-4; all 6 fan coil units missing serial numbers. Cannot reconcile to submittal 23 73 13-002 or upload to Maximo. |
+> | 4 | HVAC installer warranty (2-year, labor + parts) | Midwest MEP | 23 05 00 § 1.11.A | Received with issues | Warranty document present but unsigned and undated. Unenforceable as submitted. |
+> | 5 | Cx final report — MEP (signed by Cx agent) | Altura Engineering (Cx) | 01 91 13 § 3.7 | Missing | Draft report circulated 2026-03-28; Altura has not issued signed final. GC reports Cx agent is pending one outstanding FPT on VAV-L09. |
+> | 6 | TAB report | Balancing sub | 23 05 93 § 3.5 | Received — complete | Signed, stamped, dated 2026-02-28. ✅ |
+> | 7 | Unconditional lien waiver — Brightside Electric | Brightside Electric | Contract § 9.3 | Missing | Conditional waiver for final draw received; unconditional not submitted. |
+> | 8 | Unconditional lien waiver — Modern Glazing | Modern Glazing | Contract § 9.3 | Missing | Conditional waiver for final draw received; unconditional not submitted. |
+> | 9 | Unconditional lien waiver — Midwest Flooring | Midwest Flooring | Contract § 9.3 | Missing | No waiver of any kind submitted. Midwest Flooring has an open backcharge dispute with GC — confirm resolution before waiver demand. |
+> | 10 | Roofing manufacturer warranty (20-year NDL) | Carlisle (via Apex Roofing) | 07 54 23 § 1.9 | Received with issues | Warranty start date shows 2026-01-15 — 45 days before certified SC date of 2026-03-01. Appears backdated to roof install completion, not SC. Start date must be corrected to 2026-03-01. |
+> | 11 | Curtain wall manufacturer warranty (10-year) | Wausau (via Modern Glazing) | 08 44 13 § 1.8 | Received with issues | Start date shows 2026-01-28 — 32 days before SC. Same pattern as roofing warranty. Correct to 2026-03-01. |
+> | 12 | Certificate of occupancy | GC / AHJ | 01 77 00 § 3.2 | Received — complete | Full CO issued 2026-02-28. ✅ |
+> | 13 | AHJ final inspection signoffs (building, electrical, mechanical, plumbing, fire) | GC | 01 77 00 § 3.2 | Received — complete | All 5 disciplines signed off. ✅ |
+> | 14 | Fire alarm acceptance test (NFPA 72) | Fire alarm sub | 28 31 00 § 3.9 | Received — complete | ✅ |
+> | 15 | Attic stock — carpet tile (10% of installed, 6 colors) | Midwest Flooring | 09 68 13 § 2.5 | Missing | Not delivered. Blocked by same dispute as lien waiver (Item 9). |
+> | 16 | Owner training — BMS/BAS (video + sign-in) | Pinnacle / Siemens | 25 09 23 § 3.8 | Received — complete | Video on file, 8 FM attendees signed. ✅ |
+>
+> ---
+>
+> ## Blocker List
+>
+> **Hard blockers (hold final payment):**
+>
+> 1. **MEP O&M — missing serial numbers (Items 3).** Spec 01 78 23 § 2.1.B and 23 05 00 § 1.7 require O&M content to match installed equipment by model and serial number. Two AHUs and all 6 FCUs are missing serial numbers — cannot confirm the O&M matches installed equipment, and CMMS upload to Maximo is blocked. *Midwest MEP to pull field tags from each unit and update the O&M binder.* Owner FM standard requires Maximo upload within 30 days of SC — already 45 days past.
+>
+> 2. **HVAC installer warranty unsigned (Item 4).** An unsigned warranty is unenforceable. Spec 23 05 00 § 1.11.A requires a signed, dated installer warranty for 2 years labor and parts. *Midwest MEP to execute and return by 2026-04-22.*
+>
+> 3. **Cx final report not issued (Item 5).** Spec 01 91 13 § 3.7 requires the Cx agent's signed final report as a condition of closeout. One outstanding FPT (VAV-L09) is reportedly blocking issuance. *Pinnacle to schedule the FPT retest with Altura no later than 2026-04-20; Altura to issue signed final report within 5 business days of passing retest.*
+>
+> **Soft blockers (hold retainage release, not interim final payment):**
+>
+> 4. **Missing unconditional lien waivers — Brightside Electric and Modern Glazing (Items 7, 8).** Illinois Mechanics Lien Act (770 ILCS 60) requires unconditional waivers before retainage release. *GC to collect by 2026-04-22.*
+>
+> 5. **Midwest Flooring — no waiver, no attic stock (Items 9, 15).** Backcharge dispute must be resolved. *GC to confirm dispute status and either issue backcharge credit or execute settlement by 2026-04-30, then collect waiver and attic stock delivery.*
+>
+> 6. **Fire alarm riser not updated for CO #3 (Item 1).** As-built E-801 shows the pre-CO panel location at Level 7. CO #3 relocated the panel; the as-built must reflect the as-built condition per 01 78 39 § 3.1. *Fire alarm sub to issue updated riser E-801-Rev1 by 2026-04-22.*
+>
+> **Issues requiring correction (not payment blockers, but unacceptable as submitted):**
+>
+> 7. **Backdated warranty start dates — roofing and curtain wall (Items 10, 11).** Start dates of 2026-01-15 and 2026-01-28 predate certified SC by 32–45 days. Per config.yml convention and spec 01 77 00, warranty periods begin on the certified SC date. *Carlisle and Wausau to reissue warranties with start date 2026-03-01.*
+>
+> 8. **Native DWG/RVT files not delivered (Item 2).** Owner FM standard (and config.yml) requires native files for CMMS integration. PDFs were delivered; natives were not. *GC to request from drawing subs and deliver by 2026-04-30.*
+>
+> ---
+>
+> ## Recommended Final Payment / Retainage Release
+>
+> **Hold full retainage release pending resolution of all soft blockers (Items 4–8).** An interim final payment (excluding retainage) may be released once the three hard blockers (Items 1–3) are resolved. Suggested release schedule:
+>
+> - 2026-04-22 target: Hard blockers 1–3 resolved → authorize interim final payment
+> - 2026-04-30 target: Soft blockers 4–8 resolved → release retainage in full
+>
+> If Midwest Flooring dispute extends past 2026-04-30, retain 150% of the estimated disputed amount per AIA A201 § 9.10.5 until resolution.
+>
+> ---
+>
+> _AI-assisted closeout audit. All document determinations must be confirmed by the CM of record. This audit does not replace the architect's final completion certificate (AIA G706), the Cx agent's signed report, or legal review of lien waivers under Illinois Mechanics Lien Act. Warranty enforceability questions require owner's legal counsel._

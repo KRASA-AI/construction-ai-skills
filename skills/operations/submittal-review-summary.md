@@ -4,7 +4,7 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~30-45 min/submittal"
-version: 2.0
+version: 3.0
 last_eval_score: null
 ---
 
@@ -12,11 +12,13 @@ last_eval_score: null
 
 ## Purpose
 
-Read a submittal package (product data, shop drawings, samples, or mock-ups) and produce a one-page reviewer memo that: (a) lists every deviation from the contract specifications, (b) classifies each deviation as minor / substantive / or a substitution-request, (c) recommends a disposition (No Exceptions Taken / Make Corrections Noted / Revise & Resubmit / Rejected) consistent with the spec's allowed stamps, and (d) flags coordination impacts for related trades and the project schedule.
+Read a submittal package (product data, shop drawings, samples, or mock-ups) and produce a one-page reviewer memo that: (a) lists every deviation from the contract specifications, (b) classifies each deviation as minor / substantive / or a substitution-request, (c) recommends a disposition (No Exceptions Taken / Make Corrections Noted / Revise & Resubmit / Rejected) consistent with the spec's allowed stamps, and (d) flags coordination impacts for related trades and the project schedule. Also runs as a **Reviewer-of-Platform-AI-Output** sub-mode: second-pair-of-eyes redline review of an AI-processed submittal review from a platform tool (Trunk Tools TrunkSubmittal, Procore, Datagrid, Pelles AI, or any other AI-powered submittal automation platform) before the GC stamps and routes the submittal.
 
 ## When to Use
 
 Use this skill when a PM, PE, or CM needs to review an incoming shop drawing or product data submittal against the project specifications before stamping it and routing it back. It works for commercial, institutional, and multifamily projects where submittals follow a CSI/MasterFormat structure and are tracked in a log (Procore, Submittal Exchange, Newforma, etc.). Do not use this skill to replace the architect's or engineer-of-record's stamped review — the output is a reviewer's working summary, not an A/E approval.
+
+Use the **Reviewer-of-Platform-AI-Output sub-mode** when a platform AI tool has already processed the submittal and generated a discrepancy report, compliance check, or draft review memo. Platforms currently shipping at enterprise scale for AI-assisted submittal review include Trunk Tools TrunkSubmittal (enterprise rollout with top-10 GCs; 2,000+ submittals reviewed), Procore (Submittal Agent in development; Datagrid submittal automation available), Pelles AI (submittal log generation and review), and others. The sub-mode treats the platform output as first-pass junior-reviewer work and applies the same 6-point compliance check this skill always applies, then produces a redlined version ready to stamp and route.
 
 ## Required Input
 
@@ -28,6 +30,7 @@ Provide the following:
 4. **Submittal log info** — Submittal number, revision number, date received, required review turnaround per spec (typically 10–15 working days)
 5. **Prior reviews** — If this is a resubmittal, the previous review comments and stamp
 6. **Project constraints** — Long-lead flags, related trades awaiting this submittal, upcoming coordination meetings, any substitution request tied to cost or schedule
+7. **Sub-mode flag (if applicable)** — Specify: (a) standard reviewer memo (default), or (b) Reviewer-of-Platform-AI-Output. If sub-mode (b), also provide: the platform name and agent/version, the platform's full output text or report (paste or attach), and the source documents the platform was given access to (spec sections, drawing sheets, prior submittals)
 
 ## Instructions
 
@@ -128,6 +131,52 @@ Markdown memo with this structure:
 - Flag any submittal that has consumed more than 80% of the spec's required turnaround window
 - Include a disclaimer that this is an AI-assisted reviewer's summary and does not replace the A/E's stamped review or the contractor's duty to build per the contract documents
 - Saved to `outputs/` if the user confirms
+
+### Sub-Mode: Reviewer-of-Platform-AI-Output
+
+When the input mode is a platform-AI submittal review (Trunk Tools TrunkSubmittal, Procore Datagrid submittal automation, Pelles AI, Newforma AI, Autodesk Construction Cloud submittal intelligence, or any other generative-AI submittal tool), the skill switches to redline-review mode. The platform output is treated as junior-reviewer first-pass work; this skill is the senior-reviewer check before the stamp is issued and the submittal is routed back to the sub.
+
+Run the platform output through this six-point checklist and produce a redlined version (kept lines, struck lines, inserted lines, and a one-paragraph review summary):
+
+1. **Compliance matrix completeness.** Did the platform identify *every* specified requirement the submittal must address, or only the obvious ones? Platforms commonly miss performance requirements buried in later spec paragraphs (e.g., "paragraph 3.4 — field testing"), warranty duration requirements, and LEED/sustainability documentation requirements listed in Division 01. Cross-check the platform's compliance matrix against the full spec section before accepting it.
+2. **Deviation classification accuracy.** Did the platform correctly classify each deviation as minor, substantive, or substitution-request? Platforms commonly under-classify substitutions as "minor deviations" when the sub offered a different manufacturer without a formal substitution form. Re-classify per the taxonomy in this skill's main instructions.
+3. **Substitution form check.** If the platform flagged a different product than specified, did it also check for the formal substitution form (CSI 13.1A, 13.2A, or the project-equivalent) and the allowed-substitution window? Platforms routinely miss the procedural substitution requirements even when they catch the product difference.
+4. **Coordination impact coverage.** Did the platform identify all dependent submittals (what this submittal relies on and what it drives)? Platforms with access to only the current submittal often miss the dependency chain. Cross-check against the submittal log.
+5. **Disposition rationale.** Did the platform recommend a disposition with a specific rationale citing the spec section and paragraph for each deviation? Platforms commonly recommend "Revise & Resubmit" without naming the specific paragraph that requires it. Add citations.
+6. **Administrative completeness check.** Did the platform confirm the contractor's stamp is present, the submittal number matches the log, and all required attachments per the spec's "Action Submittals" paragraph are present? Platforms with limited document access often skip the administrative check.
+
+**Output structure for Reviewer-of-Platform-AI-Output mode:**
+
+```
+# Submittal Platform-AI Review — [Submittal Number / Rev] — [Spec Section Title]
+Platform: [Trunk Tools TrunkSubmittal / Procore Datagrid / Pelles AI / other]
+Agent version: [if available]
+Reviewer: [name, role]
+Date: [YYYY-MM-DD]
+
+Platform Output (verbatim or summarized):
+[Full platform output as received]
+
+Review Findings:
+1. Compliance matrix completeness: [Pass / Gap: missed paragraph X.X.X — added]
+2. Deviation classification: [Pass / Re-classified: "minor" → "substitution request" — added Form CSI 13.1A requirement]
+3. Substitution form check: [Pass / FAIL — platform did not check for sub form; added requirement]
+4. Coordination impacts: [Pass / Added: depends on submittal 09 22 16-002 (pending)]
+5. Disposition rationale: [Pass / Added spec cite for each deviation]
+6. Administrative check: [Pass / Flag: contractor's stamp not confirmed by platform]
+
+Recommended Disposition: [Stamp — confirmed or revised from platform's recommendation]
+
+Final Redlined Review Memo:
+[Cleaned, stamped-ready memo using the standard output structure above]
+
+Pattern Notes (for platform-config feedback):
+[Any gap that recurred across this and prior platform outputs — flag for platform config improvement]
+
+*This submittal review was conducted against a platform-AI first-pass output.
+The redlined memo above is the final version for stamping and routing.
+Reviewed by [name, role] on [date].*
+```
 
 ## Example Output
 

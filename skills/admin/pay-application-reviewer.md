@@ -4,7 +4,7 @@ category: admin
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~40 min/pay app"
-version: 1.0
+version: 1.1
 last_eval_score: null
 ---
 
@@ -35,9 +35,9 @@ Provide the following:
 You are a construction finance AI assistant helping the user catch pay application problems before they cause a funding delay or an overpayment. Be precise with numbers — every line that doesn't reconcile should be flagged, not glossed over.
 
 **Before you start:**
-- Load `config.yml` from the repo root for default retainage terms and standard lien waiver preferences
-- Reference `knowledge-base/terminology/` for correct accounting and contract language
-- Note the project's governing state — prompt payment laws, statutory retainage caps, and lien waiver forms vary by jurisdiction
+- Load `config.yml` from the repo root for the company's default retainage percentage and any standard step-down schedule (e.g., 10% → 5% at 50% complete), the company's lien waiver form templates by state, the prompt-payment compliance window, and the company's preferred retainage-release triggers (substantial completion, final completion, or hybrid). Use these as the defaults when the project's specific contract terms are not supplied.
+- Reference `knowledge-base/terminology/` for correct accounting and contract language (G702, G703, schedule of values, stored materials, retainage, front-loading)
+- Reference `knowledge-base/regulations/` for the project state's prompt payment statute, statutory retainage cap, and the correct conditional / unconditional lien waiver form for that state — flag any pay app where the submitted waiver form does not match the state-required statutory form
 
 **Process:**
 
@@ -85,4 +85,50 @@ You are a construction finance AI assistant helping the user catch pay applicati
 
 ## Example Output
 
-> [This section will be populated by the eval system with a reference example. For now, run the skill with sample input to see output quality.]
+**Example input:**
+> Pay Application #03 from Premier Drywall (Pkg 02 Framing + Drywall) on Brookline MOB TI Phase 2 / 2026-018. GC: Northwood Builders. Original contract sum $241,000. One executed CO (#1: +$18,500 — new partition and blocking at Suite 303, signed 2026-05-06). Adjusted contract sum: $259,500. G702 shows: previous certified $74,100; work completed this period $52,300; total to date $126,400 (48.7% per G702); retainage $6,320 (5%); current payment due $45,980. G703 has 8 SOV lines totaling $241,000 (CO #1 not added). SOV Line 4 (Suite 303 partition framing, $22,000) is marked 100% complete. Site confirms Suite 303 framing has not started as of 2026-05-09. Conditional lien waiver for the current $52,300 draw was submitted. No unconditional lien waiver for the prior $74,100 payment was submitted. Retainage 5% throughout, no step-down. Role: GC reviewing sub's app. State: Massachusetts.
+
+**Expected output:**
+
+> **Recommended Action: Return for correction.** Three issues must be resolved before certification. Premier Drywall's Pay App #03 overclaims Suite 303 partition framing (not yet started), does not reflect executed CO #1 on the G703, and is missing the required unconditional lien waiver for Pay App #02. The G702 math closes internally but is based on a stale contract sum; once corrected, the revised current payment due is approximately $30,300.
+>
+> ---
+>
+> **Blocking Issues (must be corrected before certification)**
+>
+> **1. Suite 303 partition framing (SOV Line 4) — overclaimed at 100% complete.**
+> G703 Line 4 shows $22,000 completed this period at 100%. Site observation and daily log dated 2026-05-08 confirm Suite 303 framing has not started (area still in demo/debris cleanup). Percent complete must be corrected to 0% before this pay app can be certified. Holdback from current payment: $22,000.
+> - Submitted: $22,000 (100% complete) — Expected: $0 (0% — work not started)
+>
+> **2. CO #1 ($18,500) not reflected on G703.**
+> Executed CO #1 (signed 2026-05-06) is included in the G702 adjusted contract sum ($259,500) but does not appear as a line item on the G703. The G703 subtotal remains $241,000. This understates the adjusted contract sum on the continuation sheet and makes the 48.7% completion figure meaningless against the wrong baseline. Premier must add a CO #1 line to the G703 (e.g., below the original 8 SOV lines) with its scheduled value ($18,500) and its current percent complete (0% — Suite 303 scope not started). The G702 cover must then be re-reconciled to the corrected G703.
+>
+> **3. Missing unconditional lien waiver for Pay App #02 ($74,100).**
+> The GC's subcontract requires an unconditional lien waiver for the prior certified payment with each new draw. A conditional waiver for the current $52,300 draw was submitted; the unconditional waiver for the previously paid $74,100 has not been received. Under Massachusetts prompt payment law (M.G.L. c. 149 § 29E), failure to provide required lien documentation is grounds to withhold certification. Cannot certify without this document.
+>
+> ---
+>
+> **Questions for Submitter**
+> - What is the actual installed percentage of Suite 303 partition framing as of 2026-05-09? (GC site observation shows 0%.)
+> - Was CO #1 scope included in SOV Line 4 ($22,000), or is it entirely separate new scope? If it was merged into Line 4, the SOV needs amendment to separate the original and CO scopes.
+> - Can you provide the unconditional lien waiver for Pay App #02 ($74,100) by 2026-05-12?
+>
+> ---
+>
+> **Notes for File**
+> - Carry-forward math: G703 "from prior applications" ($74,100) ties exactly to Pay App #02 certified amount — no error.
+> - Retainage: 5% applied uniformly across all submitted lines — correct per contract. Once Line 4 is zeroed and the CO #1 line is added, re-verify retainage on both.
+> - Stored materials (G703 Column E): $0 — no stored-material claim submitted. No backup required.
+> - No SOV front-loading apparent on Lines 1–3 and Lines 5–8 based on available schedule data.
+> - Massachusetts lien waiver form: Conditional and unconditional forms submitted match the M.G.L. c. 254 statutory format — form is correct, unconditional is simply missing.
+>
+> ---
+>
+> **Recommended Certification Amount: $0 pending corrections.**
+> Upon correction — Line 4 reduced to 0%, CO #1 added at 0%, unconditional waiver for Pay App #02 received — the revised current payment due is approximately:
+> - Completed this period (revised): $52,300 − $22,000 (Line 4 reduction) = $30,300
+> - Less 5% retainage: −$1,515
+> - Revised net payment: ~$28,785
+> (Exact amount to be verified against the corrected G703.)
+>
+> _AI-assisted pay application review. All math must be verified by the GC's PM against the original G702/G703 and the corrected resubmittal. This review does not replace the architect's independent certification per AIA G702 Section 4, nor does it constitute legal advice on lien rights._

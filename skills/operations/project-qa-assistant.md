@@ -4,7 +4,7 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~30-60 min/question vs. manual document search"
-version: 1.0
+version: 1.1
 last_eval_score: null
 ---
 
@@ -34,10 +34,10 @@ Provide the following:
 You are a construction document research assistant. Your job is to find the governing answer to a question, cite the source, and be explicit when the answer is ambiguous or when documents conflict. Never invent a citation. Never "fill in" a number or detail not present in the record. If the corpus is insufficient, say so and recommend an RFI.
 
 **Before you start:**
-- Load `config.yml` for the company's document hierarchy (e.g., order of precedence: Agreement → Supplementary Conditions → General Conditions → Drawings → Specifications, or the project-specific flow-down)
+- Load `config.yml` for the company's document hierarchy (e.g., order of precedence: Agreement → Supplementary Conditions → General Conditions → Drawings → Specifications, or the project-specific flow-down) and the company's standard contract form (AIA A201, ConsensusDocs, EJCDC, or owner custom) — use these as the default when the project-specific order of precedence is not supplied
 - Reference `knowledge-base/terminology/` for CSI division names, AIA document numbers, and standard contract-document naming
-- Reference `knowledge-base/regulations/` for common code citations and standard references (ASTM, ANSI, NFPA)
-- If the project has a documented order of precedence that differs from the industry default, use the project's order
+- Reference `knowledge-base/regulations/` for state-specific prompt-payment law and lien rights (relevant when questions touch payment, retainage, or lien exposure), and for common code citations and standard references (ASTM, ANSI, NFPA, IBC, NEC)
+- If the project has a documented order of precedence that differs from the industry default, use the project's order; if none is supplied, default to the AIA A201 General Conditions hierarchy: Agreement → General Conditions → Supplementary Conditions → Drawings → Specifications
 
 **Process:**
 
@@ -80,4 +80,31 @@ You are a construction document research assistant. Your job is to find the gove
 
 ## Example Output
 
-> [This section will be populated by the eval system with a reference example. For now, run the skill with sample input to see output quality.]
+**Example input:**
+> Brookline MOB TI Phase 2 / 2026-018. GC is Northwood Builders, architect HGA, AIA A101/A201 contract, AHJ is City of Brookline MA. Question from Pkg 02 sub PM (Premier Drywall): "We're framing Monday and can't figure out if the demising wall between Suite 301 and Corridor 102 is rated or non-rated. The partition schedule says one thing and the spec says another." Role: GC PM. Purpose: field install decision, schedule-critical (Pkg 02 framing starts 2026-05-13). Documents provided: Spec 09 21 16 (IFC 2026-03-15 + Addendum 2 dated 2026-04-22), Drawing A-201 Rev 3 (Bulletin 4, 2026-05-05), Drawing A-901 Rev 2 (Partition Type Schedule, IFC 2026-03-15), Drawing A-602 Rev 4 (Interior Details, Bulletin 4), RFI log (RFI #047 closed 2026-04-28), ASI log (none issued).
+
+**Expected output:**
+
+> **Question (restated):** What fire-resistance rating is required for the demising wall assembly at the boundary between Suite 301 and Corridor 102, per the contract documents in effect as of Bulletin 4?
+>
+> **Governing Answer:** The demising wall between Suite 301 and Corridor 102 requires a **1-hour fire-resistance-rated assembly — UL U419, slab-to-deck**. Spec 09 21 16 § 3.3.B designates UL U419 (1-hour) for all demising walls adjacent to rated corridors. Drawing A-901 Rev 2 (Partition Type Schedule) calls this wall Type W-4R, with the notation "1-HR FR — UL U419 — slab-to-deck." Drawing A-201 Rev 3 (Bulletin 4) keynotes the Suite 301 / Corridor 102 boundary as W-4R; Bulletin 4 did not change this designation. Proceed with the UL U419 assembly.
+>
+> **Citation Block:**
+>
+> | Document | Rev / Date | Location | Finding |
+> |---|---|---|---|
+> | Spec 09 21 16 — Gypsum Board Assemblies | IFC 2026-03-15 + Addendum 2 | § 3.3.B | Demising walls adj. rated corridors: UL U419 1-hour assembly |
+> | Drawing A-901 — Partition Type Schedule | Rev 2, IFC 2026-03-15 | Type W-4R row | "1-HR FR — UL U419 — slab-to-deck" |
+> | Drawing A-201 — Floor Plan Level 2 | Rev 3, Bulletin 4, 2026-05-05 | Grid B/3–B/4 | Keynote W-4R at Suite 301 / Corridor 102 boundary — unchanged by Bulletin 4 |
+> | Drawing A-602 — Interior Details | Rev 4, Bulletin 4, 2026-05-05 | Detail 7A | Schluter Reno-U floor transition at corridor 100A (different condition — unrelated) |
+> | RFI #047 | Closed 2026-04-28 | Corridor 100A floor transition | Unrelated to this wall; closure confirmed Detail 7A governs floor transition at 100A only |
+>
+> **Conflict Log:** Addressable conflict. The sub's reference to "the partition schedule says one thing" most likely refers to a legacy non-rated (W-2) call-out on an earlier drawing set or a misread of A-901 Rev 2. A-901 Rev 2 is unambiguous: Type W-4R, 1-hour rated, slab-to-deck. If the sub has an earlier revision of A-901 that shows W-2 at this location, that revision is superseded by A-901 Rev 2 (IFC set). No conflict exists in the current issued documents. **Spec governs quality (1-hour rated); drawing governs location (Suite 301 / Corridor 102 boundary per A-201 Rev 3).**
+>
+> **Confidence: High** — Single unambiguous assembly (UL U419) confirmed in both the spec and the current partition schedule; current drawing is consistent. What would make this Low: if the sub has a printed drawing set pre-dating A-901 Rev 2 — verify that the sub's set is current before framing.
+>
+> **Related Prior Decisions:** RFI #047 (closed 2026-04-28) addressed a different condition — the floor transition at corridor 100A — and does not bear on the wall rating at Suite 301. No ASI issued for this wall. No submittal for 09 21 16 includes a rating exception for this location.
+>
+> **Recommended Next Action:** Proceed with UL U419 assembly at Suite 301 / Corridor 102. Confirm with Premier Drywall's sub PM that their field set includes A-901 Rev 2 (not a prior revision). Before framing, also coordinate the slab-to-deck rated joint detail at the top-of-wall condition — this is a separate installation step from the stud assembly itself, and it was the subject of a prior scope discussion (see submittal 09 21 16-002 and RFI context in the Bulletin 4 package). **No RFI needed at this time.**
+>
+> _Document Q&A produced with AI assistance. This is a document-research answer, not a licensed engineer's or architect's opinion. For corridor fire-resistance requirements driven by IBC occupancy separation, confirm with the architect that UL U419 meets the AHJ's corridor-rating requirement for the specific occupancy classification of this healthcare TI. If the AHJ interpretation differs from the contract documents, a formal RFI to the architect is required before framing._
