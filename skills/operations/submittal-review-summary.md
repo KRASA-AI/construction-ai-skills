@@ -4,7 +4,7 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~30-45 min/submittal"
-version: 3.0
+version: 3.1
 last_eval_score: null
 ---
 
@@ -12,13 +12,13 @@ last_eval_score: null
 
 ## Purpose
 
-Read a submittal package (product data, shop drawings, samples, or mock-ups) and produce a one-page reviewer memo that: (a) lists every deviation from the contract specifications, (b) classifies each deviation as minor / substantive / or a substitution-request, (c) recommends a disposition (No Exceptions Taken / Make Corrections Noted / Revise & Resubmit / Rejected) consistent with the spec's allowed stamps, and (d) flags coordination impacts for related trades and the project schedule. Also runs as a **Reviewer-of-Platform-AI-Output** sub-mode: second-pair-of-eyes redline review of an AI-processed submittal review from a platform tool (Trunk Tools TrunkSubmittal, Procore, Datagrid, Pelles AI, or any other AI-powered submittal automation platform) before the GC stamps and routes the submittal.
+Read a submittal package (product data, shop drawings, samples, or mock-ups) and produce a one-page reviewer memo that: (a) lists every deviation from the contract specifications, (b) classifies each deviation as minor / substantive / or a substitution-request, (c) recommends a disposition (No Exceptions Taken / Make Corrections Noted / Revise & Resubmit / Rejected) consistent with the spec's allowed stamps, and (d) flags coordination impacts for related trades and the project schedule. Also runs as a **Reviewer-of-Platform-AI-Output** sub-mode: second-pair-of-eyes redline review of an AI-processed submittal review from a platform tool (Trunk Tools TrunkSubmittal, Procore Datagrid AI, Pelles AI, Newforma Vojo, or any other AI-powered submittal automation platform) before the GC stamps and routes the submittal.
 
 ## When to Use
 
 Use this skill when a PM, PE, or CM needs to review an incoming shop drawing or product data submittal against the project specifications before stamping it and routing it back. It works for commercial, institutional, and multifamily projects where submittals follow a CSI/MasterFormat structure and are tracked in a log (Procore, Submittal Exchange, Newforma, etc.). Do not use this skill to replace the architect's or engineer-of-record's stamped review — the output is a reviewer's working summary, not an A/E approval.
 
-Use the **Reviewer-of-Platform-AI-Output sub-mode** when a platform AI tool has already processed the submittal and generated a discrepancy report, compliance check, or draft review memo. Platforms currently shipping at enterprise scale for AI-assisted submittal review include Trunk Tools TrunkSubmittal (enterprise rollout with top-10 GCs; 2,000+ submittals reviewed), Procore (Submittal Agent in development; Datagrid submittal automation available), Pelles AI (submittal log generation and review), and others. The sub-mode treats the platform output as first-pass junior-reviewer work and applies the same 6-point compliance check this skill always applies, then produces a redlined version ready to stamp and route.
+Use the **Reviewer-of-Platform-AI-Output sub-mode** when a platform AI tool has already processed the submittal and generated a discrepancy report, compliance check, or draft review memo. Platforms currently shipping at enterprise scale for AI-assisted submittal review include Trunk Tools TrunkSubmittal (enterprise rollout with top-10 GCs; 2,000+ submittals reviewed), Procore Datagrid AI (limited availability launched April 2026 — autonomous submittal reviews and RFI drafting), Pelles AI (submittal log generation and review), Newforma Vojo (agent-driven AI-assisted submittal review workflows announced at Newforma World 2026; integrated with Smart Email Filing), and others. The sub-mode treats the platform output as first-pass junior-reviewer work and applies the same 6-point compliance check this skill always applies, then produces a redlined version ready to stamp and route.
 
 ## Required Input
 

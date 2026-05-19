@@ -4,7 +4,7 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~25 min/RFI"
-version: 3.0
+version: 3.1
 last_eval_score: null
 ---
 
@@ -12,7 +12,7 @@ last_eval_score: null
 
 ## Purpose
 
-Draft a clear, defensible Request for Information (RFI) response that cites specific spec sections, drawing details, and prior project decisions — structured so the receiving party (architect, engineer, GC, sub, or owner) can act on it without a follow-up round-trip. Works for three input shapes: drafting an outgoing RFI from the field, drafting a response to an incoming RFI, and reviewing the output of a platform-AI RFI agent (Procore RFI Drafter Agent, Datagrid, Symphona, Ruh.ai, Varseno, Pelles, Zero RFI) before transmittal.
+Draft a clear, defensible Request for Information (RFI) response that cites specific spec sections, drawing details, and prior project decisions — structured so the receiving party (architect, engineer, GC, sub, or owner) can act on it without a follow-up round-trip. Works for three input shapes: drafting an outgoing RFI from the field, drafting a response to an incoming RFI, and reviewing the output of a platform-AI RFI agent (Procore RFI Drafter Agent, Procore Datagrid AI, Symphona, Ruh.ai, Varseno, Pelles AI, Newforma Vojo, Zero RFI) before transmittal.
 
 ## When to Use
 

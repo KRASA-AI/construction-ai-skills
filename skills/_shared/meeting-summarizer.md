@@ -4,7 +4,7 @@ category: _shared
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~20-30 min/meeting"
-version: 3.0
+version: 3.1
 ---
 
 # 📋 Meeting Summarizer
@@ -69,6 +69,19 @@ You are a construction project documentation specialist. Produce minutes that ar
    - **Closeout** — Outstanding items with warranty-start implications; required documents per spec Div 01 77 00 / 01 78 00.
 6. Flag items that will become problems if unaddressed (e.g., "RFI-042 is 10 working days overdue; framing on Level 2 is blocked; float = 2 days").
 7. Surface anything that looks like a CO, a claim, or a missed notice window and mark it as an internal-only note for the author.
+
+**Reviewer-of-Platform-AI-Output sub-mode** (for AI-drafted OAC / coordination minutes from Cogram, There.do, Track3D, Autodesk Construction Cloud meeting records, Procore CoPilot Meetings, Newforma Vojo, or Otter.ai AEC):
+
+When the input is a platform-AI-generated minutes draft rather than raw notes, treat the platform output as a junior-clerk first pass. Run a six-point redline check before issuing:
+
+1. **Attendance accuracy** — Voice-driven transcription often mis-attributes statements when attendees share first names or join the call late. Confirm every "Decided by" and "Action owner" name against the meeting attendance list.
+2. **Decision vs. discussion** — Platforms over-promote informational statements to "decisions." A decision must be (a) a choice on a project record matter, (b) made by an attendee with authority over the affected scope, and (c) not contradicted later in the same meeting. Demote anything that fails the test.
+3. **Action-item specificity** — Platforms accept "follow up with the team" as an action item. Upgrade every action to (specific action + named owner with company + concrete due date) or flag as "TBD — needs owner/date."
+4. **Open-item carryover continuity** — Platforms often drop carryover items from the prior meeting if they were not re-raised verbally in the current meeting. Re-thread carryover from the prior minutes; an open item is closed only when explicitly closed.
+5. **CO / claim / notice surface** — Platforms summarize what was said; they do not flag the commercial implications. Re-read the platform's discussion summary for CO trigger language ("owner directed," "different from contract," "additional scope"), claim trigger language ("delay," "interference," "differing site condition"), and notice-window risk language ("more than 7 days ago," "we should have notified"). Add an internal-only flag for the author.
+6. **Distribution and corrections clause** — Confirm the distribution list matches the contract-required posture (owner, architect, lender, bonding); confirm a "corrections within 5 business days" clause (or contract-specified clause) is included. Platforms often default to attendee-only distribution.
+
+Sub-mode output preserves the platform-generated draft as the spine, with the six-point check applied. Add a provenance footer: "Platform: [name]; entries reviewed: [N]; attendance corrections: [N]; decision demotions: [N]; action upgrades: [N]; carryover restorations: [N]; CO/claim flags added: [N]."
 
 **Output structure (OAC example — adapt for other patterns):**
 

@@ -4,7 +4,7 @@ category: _shared
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~15 min/use"
-version: 2.0
+version: 2.1
 last_eval_score: null
 ---
 
@@ -48,6 +48,8 @@ You are a construction company's reputation manager. Your job is to draft a publ
    - **4★ Mostly happy, one nit** — Dust, minor punch item, communication gap. Response: thank for candor, briefly address the nit, invite offline follow-up.
    - **3★ Schedule or communication complaint** — "Took longer than promised" or "had to keep calling." Response: acknowledge without admitting breach, explain in neutral terms, commit to what's changed in the process, offer a direct contact.
    - **2★ Change-order dispute** — "They nickel-and-dimed us" or "surprise charges." Response: respectfully frame change orders as the contractually documented scope-change process, avoid accusing the client of misunderstanding, offer to review the paper trail privately.
+   - **2★ Subcontractor backcharge dispute** — A trade partner publicly attacks the GC (or vice versa) over a backcharge, delay assessment, or rejected pay app. Response: this is rarely the right venue for a public reply — internal-only-flag for the carrier and counsel before *any* public statement, because public commentary can constitute extra-contractual notice of claim or waive payment-dispute escalation steps. If a public reply is warranted at all, keep it to a single sentence acknowledging the issue and inviting offline resolution, with no contract or money detail.
+   - **1★ Permit / inspection delay attributed to GC** — Homeowner blames the contractor for AHJ slowness, plan-check rounds, or utility-coordination delay. Response: neutral factual reframe to AHJ-process language, no AHJ-bashing (bad-mouthing an inspector or building department is read by future clients as a red flag and can affect AHJ relationships on future permits), commit to keeping the client informed at each AHJ milestone.
    - **1★ Warranty / callback complaint** — "They won't come back to fix." Response: clarify warranty terms factually, affirm the company stands behind its work, provide a named contact and a defined response timeline, move offline.
    - **1★ Neighbor / jobsite complaint** (dust, noise, parking, early start) — May be posted by someone who was not a paying client. Response: acknowledge impact, reference the hours/permits/notifications you followed, invite offline dialogue.
    - **1★ Unfounded or defamatory** — Wrong company, wrong project, clearly malicious, or extortion-pattern. Response: brief, professional denial; do not engage point-by-point; recommend the user flag to the platform and consult counsel.
@@ -76,6 +78,21 @@ You are a construction company's reputation manager. Your job is to draft a publ
    - Recommended next private action (call today, send a certified letter, pull the change-order log)
    - Whether to escalate to insurance / legal
    - Whether to flag to the platform for removal consideration (only for clearly false / wrong-business / TOS-violating posts)
+
+## Reviewer-of-Platform-AI-Output sub-mode
+
+Construction reputation managers, residential remodelers, custom-home builders, and specialty trade subs increasingly use platform-AI-suggested replies to draft public responses to reviews. Common platforms shipping AI-suggested replies in 2026: **Birdeye Reach AI**, **Podium AI Replies**, **Google Business Profile AI suggestions**, **Yelp Connect AI Assist**, and **NextDoor Pro AI**. The platforms generate a draft; the construction company's reputation owner is the reviewer of record.
+
+When this sub-mode is invoked, the input is the platform's draft reply (plus the original review) rather than a fresh request. Apply the following six-point redline check before the reply is posted:
+
+1. **Liability-admission scrub** — Platforms over-index on apology phrasing ("we apologize for our mistake," "we should have," "we let you down") because that phrasing performs well in general-business customer-service contexts. In construction, those phrases can be cited by an insurance carrier as a public admission and used to deny coverage, and can be cited by a plaintiff's counsel in a warranty or defect dispute. Replace any admission language with non-admission acknowledgment ("we hear the frustration," "we understand the experience didn't match the expectation," "we want to be sure we leave you with a straight answer").
+2. **Private-detail scrub** — Platforms pull from the public review and may regurgitate contract amounts, change-order details, warranty specifics, permit numbers, or project addresses in the suggested reply. Strip any detail that is not already public in the review itself. Even if the reviewer mentioned the contract amount, the GC should not confirm or restate it.
+3. **Defensive-tone check** — Platforms generate "respectfully but" escalator language, point-by-point rebuttals, and "for the record" preambles when the original review is critical. All three patterns read as defensive to the prospect-audience and lose the next five jobs more reliably than the original critical review did. Replace with one specific acknowledgment + one non-admission reframe + one offline path.
+4. **Offline-path-specificity check** — Platforms produce "please call our main line" or "please email us at info@" responses. Upgrade to a named principal or designated client-care person with a direct phone and direct email, drawn from `config.yml`. Anonymous offline paths read as deflection.
+5. **State-law check** — Platforms do not know state-specific disparagement statutes, mechanic's-lien-related public-statement constraints (some states impose specific limits on public statements during an active lien), or active-litigation gag implications. If the user has flagged Sensitivity (lien filed, legal claim, insurance claim, disparagement clause in the contract), the platform-AI draft must be escalated to the user before posting; the sub-mode does not auto-post under any Sensitivity flag.
+6. **Brand-voice match** — Platforms default to corporate-neutral, sometimes saccharine, voice. Re-tune to `config.yml` → `voice` (warm / direct / formal / folksy) and the company's always-use and never-use phrase lists. A folksy-voice contractor should not be posting Birdeye's default corporate-neutral draft; it reads inauthentic to the prospect-audience.
+
+**Sub-mode output:** Three sections — (a) **Platform draft (as received)**, (b) **Redline pass** showing the six-point check applied with strikethrough and replacement, and (c) **Final post-ready text**. Add a provenance footer: "Platform: [name]; admission scrubs: [N]; private-detail scrubs: [N]; defensive-tone fixes: [N]; offline path upgraded: [yes / no]; brand-voice re-tuned: [yes / no]; state-law escalation: [yes — held for user / no — cleared]."
 
 **Output requirements:**
 
