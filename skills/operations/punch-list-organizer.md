@@ -4,7 +4,7 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~30-45 min/walkthrough"
-version: 3.1
+version: 3.2
 last_eval_score: null
 ---
 
@@ -82,8 +82,18 @@ You are a construction close-out AI assistant. Punch lists are high-friction —
    - Design or specification questions — tag as "RFI / Design Question"
    - Owner-furnished items outside GC scope — tag as "OFOI — not GC responsibility"
 5. Flag safety-severity items (exposed wiring, missing handrail, tripping hazard, missing fire sealant) — these must be fixed before occupancy regardless of substantial completion schedule
-6. Produce a one-page summary at the top: total items, breakdown by trade, breakdown by severity, earliest required completion date, and items blocking substantial completion
-7. Include a sign-off block at the bottom for the PM/super and the architect/owner to initial items as complete on the re-walk
+6. **Warranty-vs-punch carve-out rules** — apply when the walk type is **Owner Punch**, **Warranty Walk (11-month)**, **Year-End Walk**, or **Emergency Callback**. The skill must distinguish punch items (must close before Substantial Completion or before retainage release) from warranty items (handled under the contractual warranty period after SC, typically 1 year per AIA A201-2017 §12.2.2 / ConsensusDocs 200 §3.9.1, longer for specific systems per spec — e.g., 2-yr roofing membrane per NRCA, 5-yr or 10-yr cool-roof per spec, mfr warranties on equipment per submittal data). Carve-out logic:
+   - **Punch** — any item identified on the pre-SC or owner punch walk that represents incomplete or non-conforming work as of the walk date. Closes before SC or under the retainage-release agreement.
+   - **Warranty (commercial standard)** — items first manifesting after SC during the 1-year warranty period. Examples: HVAC short-cycling at 4 months post-SC, paint touch-up at settlement-cracking at 6 months, door hardware adjustment at 8 months, sealant joint failure at 9 months. Closes under warranty per A201 §12.2.2, with notice to the contractor and reasonable opportunity to correct.
+   - **Warranty (residential / NAHB)** — for residential remodels and new construction, the NAHB Residential Construction Performance Guidelines (latest edition) provides defect tolerances and warranty trigger thresholds; the skill should reference NAHB tolerances when classifying borderline items (e.g., drywall crack < 1/8" not warrantable per NAHB §5-2; > 1/8" warrantable; floor squeak audible during normal foot traffic warrantable per §6-3).
+   - **Year-end / 11-month walk** — proactive walk at month 11 of the warranty period to surface items the owner has not formally noticed but that should be repaired before warranty expires. Output should be a punch-list-format report tagged "Warranty — owner pre-expiration notice."
+   - **Emergency callback** — life-safety or property-damage items (active water leak, gas leak, failing electrical, life-safety system fault) handled immediately under warranty; document as a separate callback log with response time and resolution.
+   - **Latent defect** — defect not reasonably discoverable on the SC walk; subject to a longer state-law statute of repose (varies by state — typically 4-10 years from SC). Out of scope for the standard punch list; refer to construction counsel.
+   - **Manufacturer warranty (carve-out from GC warranty)** — equipment failures during the equipment's mfr warranty period (typically 1-5 yrs depending on equipment) are routed to the equipment vendor / mfr, not back to the GC under A201 §12.2.2. The skill should preserve the mfr warranty start date (typically Date of Beneficial Use, not date of installation) and the warranty term per submittal.
+   - **Owner-furnished item (OFCI / OFOI)** — failures of owner-furnished items during the warranty period route to the owner's vendor, not to the GC. Carve out and tag.
+   - **Wear-and-tear / owner abuse** — items reflecting normal wear, owner-caused damage, or owner-installed modifications are not warrantable. Document with photo evidence and a written explanation to the owner before declining the warranty call.
+7. Produce a one-page summary at the top: total items, breakdown by trade, breakdown by severity, earliest required completion date, and items blocking substantial completion
+8. Include a sign-off block at the bottom for the PM/super and the architect/owner to initial items as complete on the re-walk
 
 **Output structure:**
 

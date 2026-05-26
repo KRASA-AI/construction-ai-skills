@@ -4,7 +4,7 @@ category: admin
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~45-90 min/sub"
-version: 1.0
+version: 1.1
 last_eval_score: null
 ---
 
@@ -37,10 +37,10 @@ Provide the following:
 You are a construction risk manager's AI assistant. Your job is to read every page of a prequal packet, cross-check it against the GC's standard, and flag every gap clearly enough that the sub can respond in one email. Be pedantic about expiration dates and coverage language — these are the details that blow up projects.
 
 **Before you start:**
-- Load `config.yml` from the repo root for the GC's standard insurance requirements, EMR ceiling, and preferred sureties
-- Reference `knowledge-base/terminology/` for correct insurance and construction risk language (Acord form numbers, endorsement codes)
+- Load `config.yml` from the repo root for: (a) the GC's standard insurance requirements (GL / Auto / Umbrella / WC / Pro / Pollution per-line minima, additional-insured endorsement form preference, waiver-of-subrogation requirement, primary-and-non-contributory requirement, per-project-aggregate requirement), (b) EMR ceiling and TRIR / DART ceilings by trade family, (c) preferred sureties and the GC's surety-rating floor (typically A- VIII or better), (d) the GC's project-state list for state-specific contractor-license verification, (e) the GC's prequal-prequalification-platform choice (TradeTapp / Procore Prequalification AI / Highwire / Avetta / ISNetworld / BROWZ / COMPASS — see Reviewer-of-Platform-AI sub-mode below), and (f) the GC's two-tier upset thresholds (e.g., "Approved with conditions" vs. "Not approved at this time"). Config.yml should also state the GC's MBE/WBE/DBE-tracking convention.
+- Reference `knowledge-base/terminology/` for correct insurance and construction risk language (Acord form numbers, endorsement codes — CG 20 10 ongoing-ops, CG 20 37 completed-ops, CG 24 04 waiver-of-subrogation, CG 25 03 per-project aggregate, WC waiver state-specific forms)
 - Reference `knowledge-base/best-practices/subcontractor-risk/` if present, for the GC's standard risk matrix
-- Note that insurance endorsement language (additional insured, waiver of subrogation, primary & non-contributory) must be matched literally — "on file" or "as required by contract" on the COI is not acceptance
+- Note that insurance endorsement language (additional insured, waiver of subrogation, primary & non-contributory) must be matched literally — "on file" or "as required by contract" on the COI is not acceptance. The endorsement form must be attached and the language read.
 
 **Process:**
 
@@ -98,6 +98,190 @@ You are a construction risk manager's AI assistant. Your job is to read every pa
 - Include a disclaimer that this is an AI-assisted prequal review, that insurance endorsements must be verified with the carrier, and that financial and bonding conclusions are not underwriting opinions
 - Saved to `outputs/` if the user confirms
 
+## Reviewer-of-Platform-AI-Output Sub-Mode
+
+Many GCs in 2026 have adopted platform-based prequal-management systems with AI-assisted intake and scoring: **TradeTapp** (Procore Prequalification, AI-summarized risk score + COI parsing), **Highwire** (AI-assisted compliance scoring with carrier-verification add-on), **Avetta** (AI-summarized contractor profile + automated coverage-gap flagging), **ISNetworld** (AI-driven RAVS-Plus scoring), **BROWZ / Veriforce** (AI-assisted regrade triggers), and **COMPASS Subcontractor Compliance** (AI-assisted endorsement-language parsing). These platforms produce an AI-generated risk summary and a green/yellow/red flag set; the GC's risk manager is then the reviewer-of-AI-output rather than the original abstractor. This sub-mode produces a redline of the platform's AI summary before it is accepted into the GC's subcontract package.
+
+When the input is a platform-AI summary (not raw documents), apply this six-point redline check before accepting the platform's recommendation:
+
+1. **Endorsement-language literal-text check.** Platforms frequently mark the additional-insured / waiver-of-subrogation / primary-and-non-contributory boxes as "compliant" based on a yes/no field set by the carrier or broker — without parsing the actual endorsement form attached. Pull the endorsement PDF (CG 20 10 04 13, CG 20 37 04 13, CG 24 04 05 09, CG 25 03 05 09, or equivalent), read the language, and verify it actually covers ongoing AND completed operations on a blanket basis. Platforms over-index on the form-number match and miss the date-edition or scheduled-vs-blanket distinction.
+2. **EMR-and-TRIR trend reading.** Platforms typically score the most-recent year's EMR and TRIR; they do not score the trend. A 1.05 EMR after three years at 0.78 / 0.91 / 1.05 is a deteriorating-trend flag the platform will miss. Re-read the three-year history.
+3. **Bonding-letter currency.** Platforms accept a bonding letter at upload and rarely re-verify single-job and aggregate limits against the proposed contract value or the sub's current backlog. Re-verify: does the bonding letter reference the current project? Are the single-job and aggregate limits adequate against the proposed contract value and the sub's currently-bonded backlog?
+4. **Financial-statement independence reading.** Platforms record "financial statement on file" without distinguishing CPA-compiled vs. reviewed vs. audited. The independence level changes the weight the GC should put on the working-capital, current-ratio, and debt-to-equity figures. Re-classify and lower confidence on a compiled statement vs. an audited statement.
+5. **State-specific licensing verification.** Platforms typically verify license-number existence but not in-good-standing status, in the project state, with the right classification, and not currently suspended or under disciplinary action. Re-verify with the state licensing board's online lookup; the platform's last-verified date is often months stale.
+6. **Project-fit reading.** Platforms produce a generic-risk score, not a project-fit score. Re-score the sub against the specific project's risk profile: high-rise vs. low-rise, occupied vs. unoccupied, public vs. private, hospital / data center / school / multifamily / retail-TI (the GC's risk uplift on the baseline insurance, safety, and financial requirements changes the sub's effective prequal status from "Approved" to "Approved with conditions" or vice versa).
+
+Sub-mode output: (a) platform's original AI-generated risk summary + score (preserved verbatim), (b) redline applied to each of the six points, (c) final GC-accepted recommendation that may agree or disagree with the platform, (d) provenance footer noting which platform produced the summary, which version of its AI was used (if known), what the redline changed, and which the GC accepted.
+
 ## Example Output
 
-> [This section will be populated by the eval system with a reference example. For now, run the skill with sample input to see output quality.]
+**Example input scenario:** Brookline MOB TI Phase 2 (GC = Stonebridge Construction, owner = Brookline Health Partners, 32,000 SF medical-office build-out, $4.2M total contract). The GC is qualifying **Acme Mechanical & Plumbing, LLC** for Pkg 06 (HVAC + plumbing rough-in + plumbing finish, scope budget $612,000) as a new sub on the GC's approved-vendor list. Acme submitted a 47-page prequal packet (COI + Acord 25 with 4 endorsement PDFs, 3-year EMR letter from MEMIC, OSHA 300/300A for 2023/2024/2025, CPA-reviewed financials for FYE 2025, bonding letter from Liberty Mutual Surety, MA contractor license + plumbing license + sheet-metal license, 6 reference projects).
+
+**Expected output:**
+
+> # PREQUALIFICATION REVIEW MEMO
+>
+> **Subject:** Acme Mechanical & Plumbing, LLC — Pkg 06 HVAC + Plumbing, Brookline MOB TI Phase 2
+> **Project:** 2026-031 Brookline MOB TI Phase 2 (Brookline Health Partners, Brookline MA)
+> **Trade / Scope:** HVAC + Plumbing rough-in + Plumbing finish
+> **Proposed Contract Value:** $612,000
+> **Reviewed by:** Risk Manager (AI-assisted), Stonebridge Construction
+> **Review Date:** 2026-05-26
+>
+> ## HEADLINE RECOMMENDATION
+>
+> **Approved with conditions.** Acme Mechanical & Plumbing meets the GC's baseline insurance, safety, financial, and licensing thresholds for the Brookline MOB TI Phase 2 scope, with three conditions to clear before NTP and two execution-phase conditions to embed in the subcontract. The proposed contract value ($612,000) is within 1.4× the sub's prior-largest similar-scope project ($435,000 MGH OR-suite renovation, 2025) — within the GC's 2× warning threshold per config.yml.
+>
+> **Required actions before NTP:** 3 (resolve in 5 business days).
+> **Subcontract execution conditions:** 2 (embed in §00 7300 supplementary conditions).
+> **Pre-mobilization conditions:** 1 (state plumbing license verification refresh).
+>
+> ## REQUIREMENTS-VS-SUBMITTED MATRIX
+>
+> | # | Requirement | GC Standard | Project Uplift (Brookline MOB) | Submitted | Delta | Action | Doc / Page |
+> |---|---|---|---|---|---|---|---|
+> | 1 | GL per occurrence | $1M | — | $1M | ✓ Meets | None | COI p.1 |
+> | 2 | GL aggregate | $2M | $4M (occupied healthcare uplift) | $2M | **⚠ Short** | Increase to $4M or add CG 25 03 per-project aggregate | COI p.1 |
+> | 3 | Auto liability CSL | $1M | — | $1M | ✓ Meets | None | COI p.1 |
+> | 4 | Umbrella / Excess | $5M | $10M (occupied healthcare uplift) | $5M | **⚠ Short** | Increase umbrella to $10M or layer with project-specific excess | COI p.1 |
+> | 5 | WC / EL | Statutory / $1M EL | — | Statutory / $1M EL | ✓ Meets | None | COI p.1 |
+> | 6 | Professional liability | Not required for HVAC/plumbing | — | Not carried | ✓ N/A | None | — |
+> | 7 | Pollution liability | Required if scope incl. demolition / refrigerant recovery | $1M (refrigerant recovery on existing AHUs) | Not carried | **🔴 Missing** | Procure $1M contractors-pollution policy before NTP; non-negotiable | COI p.1 |
+> | 8 | Add'l Insured — ongoing ops | CG 20 10 04 13 blanket, owner + GC + lender | — | CG 20 10 04 13 blanket present | ✓ Meets | None | Endorsement PDF p.1 |
+> | 9 | Add'l Insured — completed ops | CG 20 37 04 13 blanket, owner + GC + lender | — | **Not attached** | **🔴 Missing** | Request CG 20 37 04 13 blanket endorsement; "on file" notation on COI p.2 is not acceptance per GC policy | COI p.2 |
+> | 10 | Waiver of Subrogation (GL+WC) | CG 24 04 + WC state-specific | — | CG 24 04 + MA WC waiver attached | ✓ Meets | None | Endorsement PDF p.2-3 |
+> | 11 | Primary & Non-Contributory | Required | — | CG 20 01 04 13 attached | ✓ Meets | None | Endorsement PDF p.4 |
+> | 12 | Per-Project Aggregate | Required for multi-job subs | — | Not attached | **⚠ Short** | Resolves with #2 above (CG 25 03 satisfies both) | — |
+> | 13 | EMR (3-yr trend) | Ceiling 1.00 | — | 0.81 / 0.78 / 0.83 (2023/2024/2025) | ✓ Meets, improving-then-flat | None — note slight 2025 uptick for execution-phase watch | MEMIC EMR letter |
+> | 14 | TRIR (most recent) | Ceiling 3.0 (mech/plumbing BLS 2024 = 2.7) | — | 1.9 | ✓ Meets (below industry) | None | OSHA 300A 2025 |
+> | 15 | DART (most recent) | Ceiling 1.5 | — | 0.9 | ✓ Meets | None | OSHA 300A 2025 |
+> | 16 | OSHA citations (5-yr) | Zero willful / repeat / serious-with-injury | — | Zero willful / repeat; 1 serious (2023, abated, $4,400) | ✓ Conditional Meets | Note in risk file; not disqualifying | OSHA 300 2023 |
+> | 17 | Written safety program | Fall protection, LOTO, hot work, hazcom, silica, confined space | + infection control risk assessment (ICRA) for healthcare | TOC submitted; ICRA not addressed | **⚠ Short** | Submit ICRA program addendum (ASHE / Joint Commission compliant) before NTP | Safety program TOC |
+> | 18 | Working capital | > $500K for $600K+ contract | — | $1.8M | ✓ Meets | None | CPA reviewed FYE 2025 p.4 |
+> | 19 | Current ratio | > 1.3 | — | 1.9 | ✓ Meets | None | CPA reviewed FYE 2025 p.4 |
+> | 20 | Debt-to-equity | < 3:1 | — | 1.4:1 | ✓ Meets | None | CPA reviewed FYE 2025 p.5 |
+> | 21 | Financial independence | CPA-reviewed minimum | — | CPA-reviewed (Smith & Co., Boston) | ✓ Meets | None — note: not audited, treat working-capital figure with normal review-level confidence | CPA cover letter |
+> | 22 | Bonding capacity (single / aggregate) | Single ≥ 1.5× contract; Aggregate ≥ 4× backlog | Single ≥ $920K (1.5 × $612K) | Single $1.5M / Aggregate $7M from Liberty Mutual Surety (A.M. Best A XV) | ✓ Meets | None — bonding letter references this specific project | Bonding letter |
+> | 23 | MA contractor license | Active, in good standing | — | HIC license active to 2027-03-15 | ✓ Meets | None | MA HIC verified 2026-05-23 |
+> | 24 | MA master plumbing license | Active, qualifying license-holder identified | — | License #MPL-22417 (John Acme, qualifying); last verified 2026-02-12 | **⚠ Stale** | Re-verify online with MA Board of State Examiners of Plumbers before NTP (3-month-stale verification per GC policy) | License copy |
+> | 25 | MA sheet-metal license | Active | — | License #SM-9821 active to 2027-06-30 | ✓ Meets | None | License copy |
+> | 26 | Similar-scope reference (healthcare TI) | ≥ 1 in last 3 yrs | — | MGH OR-suite renovation $435K (2025); BWH lab fit-out $370K (2024) | ✓ Meets | Reference checks complete — both PMs gave positive recommendations | Reference list |
+> | 27 | Single-project size jump | ≤ 2× prior largest similar | — | $612K vs. $435K = 1.41× | ✓ Meets | None | — |
+>
+> ## INSURANCE DETAIL
+>
+> **Carrier:** The Hartford (GL/Auto/Umbrella), MEMIC (WC), MA. AM Best ratings: Hartford A+ XV, MEMIC A IX — both above GC's A- VIII floor. Policy period 2026-01-01 to 2027-01-01 (no expirations within 60 days).
+>
+> **Critical gaps:**
+> 1. **🔴 Missing — Contractors Pollution Liability** (refrigerant recovery on existing AHUs triggers Brookline MOB project uplift; non-negotiable before NTP).
+> 2. **🔴 Missing — CG 20 37 04 13 Completed-Operations Additional Insured** (only ongoing-operations endorsement attached; completed-ops needed for retainage-release-to-completion warranty period).
+> 3. **⚠ Short — GL aggregate ($2M submitted vs. $4M project-uplift required)** + **⚠ Short — Umbrella ($5M submitted vs. $10M project-uplift required)** — both addressable by either raising the underlying or adding a CG 25 03 per-project aggregate plus a $5M project-specific excess; broker to confirm cost and recommend route.
+>
+> ## SAFETY DETAIL
+>
+> 3-yr EMR trend 0.81 / 0.78 / 0.83 — slight 2025 uptick (one DART case at MGH project, abated). TRIR 1.9 (well below industry 2.7). DART 0.9 (below GC ceiling 1.5). Zero willful / repeat citations; one serious citation in 2023 (housekeeping at a non-healthcare project, abated, $4,400 penalty). Written safety program covers all GC-required programs **except infection control risk assessment (ICRA)** — required for the occupied healthcare project per Brookline Health Partners' supplementary conditions and per ASHE / Joint Commission expectations. **⚠ ICRA addendum required before NTP.**
+>
+> **Execution-phase watch:** the 2025 EMR uptick + one DART case in a healthcare environment warrants pre-mobilization safety pre-construction meeting with the GC's safety director and the sub's safety lead; recommend weekly ICRA-zone audits during construction with photo-anchored documentation (cross-reference `operations/safety-plan-builder.md` reviewer sub-mode).
+>
+> ## FINANCIAL DETAIL
+>
+> CPA-reviewed (not audited) FYE 2025 — Smith & Co., Boston MA. Working capital $1.8M, current ratio 1.9, debt-to-equity 1.4:1, revenue trend 2023 $4.2M / 2024 $5.1M / 2025 $5.8M (healthy upward, 12-15% YoY). Bonding capacity single $1.5M / aggregate $7M from Liberty Mutual Surety (A.M. Best A XV). Current bonded backlog $4.1M per surety letter, leaving $2.9M aggregate headroom against the $612K Brookline MOB project. **No financial gap; CPA-reviewed (not audited) status noted — treat working-capital figure with review-level confidence per GC policy, no derate.**
+>
+> ## LICENSING & EXPERIENCE
+>
+> All three required MA licenses (HIC general, master plumbing, sheet-metal) active and in qualifying-license-holder good standing. **⚠ Master plumbing license last verified 2026-02-12 (>3 months stale per GC policy) — re-verify with MA Board of State Examiners of Plumbers online lookup before NTP.** Two similar-scope healthcare TI references both above $350K (MGH OR-suite $435K 2025; BWH lab fit-out $370K 2024); both PM references contacted by the GC's risk team 2026-05-22 and 2026-05-23 — both gave positive recommendations with no qualifying notes. Size jump from prior-largest ($435K) to proposed ($612K) is 1.41× — within the GC's 2× warning threshold.
+>
+> ## SCORE MATRIX
+>
+> | Dimension | Score |
+> |---|---|
+> | Insurance | **Conditional** (4 gaps; all curable in 5 business days with broker action) |
+> | Safety | **Conditional** (ICRA addendum required for healthcare scope) |
+> | Financial | **Pass** |
+> | Licensing | **Conditional** (re-verify master plumbing license currency) |
+> | Experience | **Pass** |
+> | **Overall** | **Approved with Conditions** |
+>
+> ## REQUIRED ACTIONS BEFORE NTP
+>
+> 1. **Owner:** Acme Mechanical broker (The Hartford / MEMIC, named on COI). **Action:** Procure $1M Contractors Pollution Liability policy; provide COI with Stonebridge Construction + Brookline Health Partners + Eastern Bank named as additional insureds. **Deadline:** 2026-06-02 (5 business days). **Verification:** Stonebridge risk manager review of CPL policy declarations page.
+> 2. **Owner:** Acme Mechanical broker. **Action:** Issue CG 20 37 04 13 Completed-Operations Additional Insured endorsement (blanket basis, including Stonebridge Construction + Brookline Health Partners + Eastern Bank); raise GL aggregate to $4M and Umbrella to $10M via CG 25 03 per-project aggregate + $5M project-specific excess (or equivalent). **Deadline:** 2026-06-02 (5 business days). **Verification:** revised COI + endorsement PDFs reviewed against requirement matrix.
+> 3. **Owner:** Acme Mechanical safety lead (John Acme, qualifying license holder). **Action:** Submit ICRA program addendum (ASHE / Joint Commission compliant; covers Class I-IV ICRA precautions, anteroom requirements, HEPA filtration, daily wet-vacuuming protocols) per Brookline MOB §01 3540. **Deadline:** 2026-06-02 (5 business days). **Verification:** Stonebridge safety director review + sign-off.
+>
+> ## PRE-MOBILIZATION CONDITIONS
+>
+> 1. **Re-verify MA master plumbing license** (license #MPL-22417, qualifying holder John Acme) with MA Board of State Examiners of Plumbers online lookup; last verified 2026-02-12, >3 months stale per GC policy. Verification date and result to be recorded in the prequal file before mobilization.
+>
+> ## SUBCONTRACT EXECUTION CONDITIONS (Embed in §00 7300 Supplementary Conditions)
+>
+> 1. **Monthly OSHA 300 + EMR update during construction** (per GC's healthcare-project standard; the 2025 EMR uptick to 0.83 and one DART case warrant execution-phase monitoring).
+> 2. **Weekly ICRA-zone audit with photo-anchored documentation** during occupied-healthcare-adjacent work (cross-reference `operations/safety-plan-builder.md` reviewer sub-mode + `operations/daily-log-generator.md` reviewer sub-mode for the photo-documentation standard).
+>
+> ## RISK NOTES FOR THE PM
+>
+> - **Healthcare ICRA discipline is the dominant execution risk** — Acme has solid mechanical / plumbing healthcare experience but ICRA program is missing from the written-program TOC; this is curable pre-NTP but warrants a Day 1 pre-mob meeting to confirm protocol understanding.
+> - **CPL is a hard gate** — refrigerant recovery on the existing AHUs (specified in §23 0900 demolition + refrigerant recovery) is the trigger; the sub may push back on CPL cost — hold the line, this is a non-negotiable owner requirement per Brookline Health Partners' RFP §11.
+> - **Bonding headroom is adequate but not deep** ($2.9M aggregate headroom vs. $612K project — 4.7× coverage); if the sub picks up another large public-works project mid-construction, re-verify aggregate availability at 50% completion.
+> - **CPA-reviewed (not audited) financials** — if Stonebridge requires audited statements for subs above $500K per a corporate-level policy update, flag for re-prequalification; current GC policy accepts CPA-reviewed at this contract size.
+>
+> ## DISCLAIMER
+>
+> This is an AI-assisted prequalification review. Insurance endorsements must be verified with the carrier and the carrier's claims representative before the subcontract is executed; "on file" or "as required by contract" notations on the COI are not acceptance. Bonding capacity and financial conclusions are not underwriting opinions and should be confirmed with the GC's surety and the sub's CPA. State-specific licensing must be verified via the state licensing board's online lookup at the verification date, not relied on from prior prequalification cycles. The risk manager should spot-check this memo against the raw documents before relying on it for subcontract execution.
+
+## Example Output — Reviewer-of-Platform-AI-Output Sub-Mode (TradeTapp / Procore Prequalification)
+
+**Example input scenario:** The GC's prequalification platform (TradeTapp, integrated with Procore Prequalification) has produced an AI-generated risk summary for **Acme Mechanical & Plumbing, LLC** (same sub as above) that reads:
+
+> **TradeTapp Risk Score: 78 / 100 (Yellow — Approved with Conditions)**
+> Coverage compliance: 100% (all required lines present). Endorsements: Compliant. EMR: 0.83 — compliant. TRIR: 1.9 — compliant. Financial: Strong (working capital, current ratio, debt-to-equity all within thresholds). Bonding: Adequate. Licensing: All licenses verified.
+> **Yellow-flag reasons:** EMR slight uptick 2024→2025 (0.78→0.83); 1 OSHA serious citation in 2023 (abated).
+> **Recommendation:** Approve with standard conditions; monitor EMR through 2026.
+
+The GC risk manager is the reviewer-of-AI-output. Re-read this summary against the raw documents using the six-point redline.
+
+**Expected output:**
+
+> # PREQUAL PLATFORM-AI OUTPUT REVIEW — REDLINE
+>
+> **Platform:** TradeTapp (integrated with Procore Prequalification), AI version per 2026-Q2 release notes
+> **Subject:** Acme Mechanical & Plumbing, LLC — Pkg 06, Brookline MOB TI Phase 2
+> **Reviewed by:** Risk Manager (AI-assisted), Stonebridge Construction
+> **Review Date:** 2026-05-26
+>
+> ## PLATFORM AI SUMMARY (PRESERVED VERBATIM)
+>
+> *TradeTapp Risk Score: 78 / 100 (Yellow). Coverage compliance: 100%. Endorsements: Compliant. EMR: 0.83 — compliant. TRIR: 1.9 — compliant. Financial: Strong. Bonding: Adequate. Licensing: All licenses verified. Yellow-flag reasons: EMR slight uptick; 1 OSHA serious citation in 2023 (abated). Recommendation: Approve with standard conditions; monitor EMR through 2026.*
+>
+> ## SIX-POINT REDLINE
+>
+> **1. Endorsement-Language Literal-Text Check — ❌ FAILS PLATFORM SUMMARY.** TradeTapp scored "Endorsements: Compliant" based on the broker's checkbox attestation in the upload form. Pulled the endorsement PDFs: CG 20 10 04 13 (ongoing-operations AI) is present and blanket; **CG 20 37 (completed-operations AI) is NOT attached** — only "on file" notation on the COI. **Per GC policy, "on file" is not acceptance — this is a 🔴 missing endorsement, not a green flag.**
+>
+> **2. EMR-and-TRIR Trend Reading — ⚠ PLATFORM UNDERSTATES.** TradeTapp flagged the EMR uptick yellow but presented it as cosmetic. Three-year trend reading: 0.81 (2023) → 0.78 (2024) → 0.83 (2025). The 2025 uptick is associated with one DART case (housekeeping injury at MGH OR-suite, abated). **For the Brookline MOB occupied-healthcare uplift, this trend warrants the execution-phase ICRA-zone weekly audit condition embedded in the subcontract — not just "monitor through 2026." Upgrade from monitoring to active execution-phase condition.**
+>
+> **3. Bonding-Letter Currency — ✓ PLATFORM IS CORRECT.** Re-read bonding letter — single $1.5M / aggregate $7M, A.M. Best A XV surety, **letter explicitly references "Brookline MOB TI Phase 2"** and was dated 2026-05-19 (well within the 60-day window). No redline.
+>
+> **4. Financial-Statement Independence Reading — ⚠ PLATFORM OBSCURES.** TradeTapp scored "Financial: Strong" — accurate at the metric level but **does not distinguish CPA-compiled vs. reviewed vs. audited**. The submitted statements are CPA-**reviewed** (Smith & Co., Boston) — review-level assurance, not audited. The working-capital and current-ratio figures should be accepted at review-level confidence, not audit-level. **Net effect: same recommendation, but the PM should know the assurance level when reading the working-capital figure.**
+>
+> **5. State-Specific Licensing Verification — ❌ FAILS PLATFORM SUMMARY.** TradeTapp scored "Licensing: All licenses verified" based on its last platform-side verification date. **The MA master plumbing license (#MPL-22417) was last verified on the platform 2026-02-12 — >3 months stale per GC policy.** Re-verify with MA Board of State Examiners of Plumbers before NTP; the platform's "verified" status is not currency-acceptable for execution.
+>
+> **6. Project-Fit Reading — ❌ FAILS PLATFORM SUMMARY.** TradeTapp produced a generic risk score (78 / Yellow). It does not know that Brookline MOB is an occupied-healthcare TI with project-specific insurance uplift (GL aggregate $4M not $2M; umbrella $10M not $5M; CPL $1M required for refrigerant recovery; ICRA program required). **Re-scored against the Brookline MOB project-specific risk profile: the sub is Approved-with-Conditions but with three additional pre-NTP conditions (CPL procurement, GL/Umbrella uplift, ICRA addendum) that the platform's generic risk score missed entirely.**
+>
+> ## FINAL GC-ACCEPTED RECOMMENDATION
+>
+> **Approved with Conditions** (matches platform recommendation directionally) **— but with five pre-NTP conditions where the platform identified zero:**
+>
+> 1. CPL $1M policy (platform missed — generic risk score)
+> 2. CG 20 37 completed-ops endorsement (platform marked compliant on broker checkbox; redline corrected)
+> 3. GL aggregate $4M + Umbrella $10M (platform missed — project-specific uplift)
+> 4. ICRA program addendum (platform missed — project-specific uplift)
+> 5. Re-verify MA master plumbing license currency (platform marked verified on stale date; redline corrected)
+>
+> Plus two execution-phase subcontract conditions (monthly OSHA 300 + EMR update; weekly ICRA-zone audit) that elevate the platform's "monitor through 2026" suggestion to an enforceable subcontract obligation.
+>
+> ## PROVENANCE
+>
+> - **Platform:** TradeTapp + Procore Prequalification, AI version per 2026-Q2 release notes
+> - **Platform risk score:** 78 / 100 (Yellow — Approved with Conditions)
+> - **Redline changes:** 4 of 6 dimensions adjusted (endorsement literal-text; EMR trend escalated; licensing currency stale; project-fit re-scored). 1 of 6 dimensions confirmed (bonding currency). 1 of 6 dimensions noted-but-accepted (financial independence — review-level vs. audit-level).
+> - **Final GC recommendation:** Approved with Conditions, 5 pre-NTP + 2 execution-phase (vs. platform's "standard conditions; monitor EMR").
+> - **Disclaimer:** This redline is AI-assisted; insurance endorsements still require carrier verification before subcontract execution.
