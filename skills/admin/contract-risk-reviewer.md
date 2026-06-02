@@ -4,7 +4,7 @@ category: admin
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~45-90 min/contract"
-version: 1.1
+version: 1.2
 last_eval_score: null
 ---
 
@@ -12,7 +12,7 @@ last_eval_score: null
 
 ## Purpose
 
-Analyze a construction contract (prime contract, subcontract, or purchase order) and produce a plain-language risk summary that flags problematic clauses, missing protections, and compliance gaps — so the user can negotiate, escalate, or walk before signing. The output is graded against the proffered form's industry-standard baseline (AIA A201-2017, ConsensusDocs 200, EJCDC C-700, or owner-custom) so the user can see whether the contract in front of them is *more* protective than the baseline, *at* the baseline, or *less* protective than the baseline — the single most useful framing for a negotiation.
+Analyze a construction contract (prime contract, subcontract, or purchase order) and produce a plain-language risk summary that flags problematic clauses, missing protections, and compliance gaps — so the user can negotiate, escalate, or walk before signing. The output is graded against the proffered form's industry-standard baseline (AIA A201-2017, ConsensusDocs 200, EJCDC C-700, or owner-custom) so the user can see whether the contract in front of them is *more* protective than the baseline, *at* the baseline, or *less* protective than the baseline — the single most useful framing for a negotiation. Also runs as a **Reviewer-of-Platform-AI-Output** sub-mode: second-pair-of-eyes redline review of an AI-processed contract risk report from a construction-platform-native AI tool (Procore Contract Review Agent, Trunk Tools Contract Review Agent, Document Crunch / Trimble Construction One, Mastt, Ment Tech) or a general legal-AI tool with a construction mode (Spellbook, Juro, LegalOn, LexCheck, SuperLegal) before the user takes the redlines to counsel or the negotiation table.
 
 ## When to Use
 
@@ -21,6 +21,8 @@ Use this skill whenever a new contract, subcontract, or purchase order arrives f
 Use also when a GC standard form needs to be benchmarked against the model AIA / ConsensusDocs / EJCDC baseline before being issued to subs, or when an owner-custom contract needs to be measured against AIA A201 to surface the deltas.
 
 Do not use this skill as a substitute for construction-counsel review on a high-value or high-risk contract — the output names risks and suggests negotiating positions; an attorney drafts the binding language and weighs the litigation posture.
+
+Use the **Reviewer-of-Platform-AI-Output sub-mode** when a construction-platform-native AI tool or a general legal-AI tool has already processed the contract and generated a risk report, flag list, or draft redline. Construction-platform-native vendors currently shipping include Procore's Contract Review Agent (launched May 2026, Datagrid-powered, identifies contractual conflicts and adds resolution-oriented comments directly within contracts, drawings, and specs; human-in-the-loop with citations linking to source documentation; in customer testing), Trunk Tools' Contract Review Agent (publicly available since early 2026 as a free tool; 14-category review covering Payment & Retainage, Change Order Procedures, Delay & LDs, Indemnification & Liability, Insurance, Warranty, Termination, Dispute Resolution, Bond & Lien, Site Conditions, Subcontract Flow-Down, Labor Compliance, Scope & Precedence, Consequential Damages; two modes — Pre-Signature Review with risk ratings + suggested redlines and Post-Signature Compliance Guide with compliance calendar, deadline matrix, delegation chart, and warning flags; Suffolk, Gilbane, Consigli, and STO Building Group named among adopters), Document Crunch (purpose-built construction AI risk-review platform with a 10,000-project track record; Trimble announced an acquisition on 2026-04-02 with the close expected in Q2 2026, after which Document Crunch's contractual rule set becomes the intelligent DNA of the Trimble Construction One ecosystem), Mastt (construction-PM-native AI contract review with PDF upload, key-term extraction, and jurisdictional-compliance verification), and Ment Tech (construction-focused AI contract review for risky clauses, payment terms, change orders, compliance, and deadline tracking). General legal-AI vendors with construction modes (Word-integrated or playbook-based) include Spellbook, Juro, LegalOn, LexCheck, and SuperLegal. The sub-mode treats the platform's risk report as junior-reviewer first-pass work and applies the same six-point senior-reviewer check this skill always applies — citation accuracy, walk-away-tier alignment, baseline-relative framing, missing-protections completeness, state-law-conflict citation accuracy, and counter-proposal-letter completeness — before the user takes the redlines to counsel or the counterparty.
 
 ## Required Input
 
@@ -33,6 +35,7 @@ Provide the following:
 5. **Contract form / baseline** — AIA A102/A401/A201, ConsensusDocs 200/750, EJCDC C-520/C-700, FIDIC, or owner-custom. Specify the year (e.g., AIA A201-2017 vs. AIA A201-2007; the 2017 version moved indemnity to mutual and added a contractor's-claims procedure)
 6. **Known concerns** — Any specific clauses or risk areas you already want scrutinized (e.g., "the indemnity language looks broad")
 7. **Walk-away tier** — Which combinations of clauses are deal-breakers vs. negotiables for your shop (often: pay-if-paid + no-damage-for-delay together = walk; either alone = negotiate)
+8. **Sub-mode flag (if applicable)** — Specify: (a) standard contract risk reviewer (default), or (b) Reviewer-of-Platform-AI-Output. If sub-mode (b), also provide: the platform name and agent/version (e.g., "Procore Contract Review Agent, May 2026"; "Trunk Tools Contract Review Agent, Pre-Signature mode"; "Document Crunch v[X]"; "Mastt"; "Spellbook construction mode"), the platform's full output text or report (paste or attach), and the source documents the platform was given access to (contract PDF, prior amendments, incorporated exhibits, project state for state-law-conflict cross-checking)
 
 ## Instructions
 
@@ -127,6 +130,71 @@ You are a construction contract risk analyst AI assistant. Your job is to read t
 - Benchmark every flag against the contract's proffered form baseline
 - Disclaimer that this is an AI-assisted review, not legal advice — recommend attorney review for high-risk items and for any contract above the company's counsel-review threshold
 - Saved to `outputs/` if the user confirms
+
+### Sub-Mode: Reviewer-of-Platform-AI-Output
+
+When the input mode is a platform-AI contract risk report (Procore Contract Review Agent, Trunk Tools Contract Review Agent, Document Crunch / Trimble Construction One, Mastt, Ment Tech, Spellbook construction mode, Juro contract review agent, LegalOn, LexCheck, SuperLegal, or any other AI-powered contract analysis tool with a construction mode), the skill switches to redline-review mode. The platform output is treated as junior-reviewer first-pass work; this skill is the senior-reviewer check before the user takes the redlines to construction counsel or to the negotiation table. Vendor-reported productivity gains (Document Crunch's reported 80% reduction in review time; Spellbook's reported 60% spot-check reduction; Trunk Tools' under-30-minute turnaround) are first-pass speed, not a substitute for the six-point senior-reviewer check below.
+
+Run the platform output through this six-point checklist and produce a redlined version (kept flags, struck flags, inserted flags, re-tiered flags, and a one-paragraph review summary):
+
+1. **Citation accuracy and section-specificity.** Did the platform cite a specific section number and quoted phrase for every flag (e.g., "§13.1.2 second sentence requires the Subcontractor to indemnify the Contractor for the Contractor's sole negligence"), or use vague language ("the indemnity is broad")? Vague flags are not actionable — negotiators triage by section number. Re-cite each flag to the specific section/paragraph, and add the quoted language so the flag is portable into the counter-proposal letter.
+
+2. **Walk-away-tier alignment with the config combinations.** Did the platform's risk-rating system align with the company's config-defined walk-away tier? Platforms commonly use a flat high/medium/low scale that ignores combinations (e.g., pay-if-paid + no-damage-for-delay together = walk in many shops; either alone = negotiate; or pay-if-paid + LDs without a cap together = walk for sub-tier shops with thin margins). Re-tier per the config-defined combinations and elevate any combination-trigger to 🔴 with an explicit "combination trigger" annotation so the negotiator can frame the redline as paired.
+
+3. **Baseline-relative framing.** Did the platform benchmark each flag against the proffered form's industry-standard baseline (AIA A201-2017 / A401-2017, ConsensusDocs 200 / 750, EJCDC C-700 / C-520, FIDIC, or owner-custom-vs-AIA), or just call out clauses absolutely? "Less protective than the A401-2017 §11.3 baseline" is far more useful for negotiation than "high risk" — because the redline ask becomes "restore the A401 baseline language" rather than an open argument. Add the baseline comparison to every flag; if the platform did not identify the form, identify it first.
+
+4. **Missing-protections completeness.** Did the platform check for *what's not there* — prompt-payment-act citation matching the project state, lien-waiver exchange schedule (4-row conditional/unconditional × partial/final), per-project-aggregate endorsement requirement (ISO CG 25 03 or equivalent), additional-insured for ongoing and completed operations (CG 20 10 + CG 20 37 or blanket equivalent), waiver of subrogation, dispute-resolution executive-escalation step before mediation, notice-of-claim window matching state public-works requirements? Most subcontract problems are missing protections, not bad clauses, and platforms commonly under-flag *omissions* because they index on what is *present* in the document. Cross-check against the missing-protections checklist in this skill's main instructions and add any gap.
+
+5. **State-law-conflict citation accuracy.** Did the platform cite the controlling state statute for jurisdiction-specific clauses (e.g., Mass. G.L. c. 149 § 29C voids broad-form indemnity; Mass. G.L. c. 149 § 29E private prompt-payment with attorney-fee shifting; Cal. Civ. Code § 8800 et seq. prompt-payment; Tex. Prop. Code § 28.001 et seq.; NY Lien Law § 756 and the state's pay-if-paid rejection; Fla. Stat. § 715.12 prompt payment)? Platforms commonly identify the risk-shape but fail to invoke the state statute that would render the clause void, unenforceable, or attorney-fee-shifted. Add citations from `knowledge-base/regulations/` for the project state; flag any jurisdiction-specific analysis as unscored if the project state was not provided to the platform.
+
+6. **Counter-proposal-letter / redline-summary completeness, with counsel-review trigger.** Did the platform produce a counter-proposal letter or redline summary, or just a flag list? A flag list without a negotiation tool is half the deliverable — the user has nothing to send to the counterparty. Generate the counter-proposal letter if the platform skipped it (grouped Priority 1 deal-breakers → Priority 2 standard redlines → Priority 3 negotiables → Additions). Confirm the counsel-review-threshold trigger: any 🔴 item AND any contract above the company's `config.yml` counsel-review threshold gets routed to construction counsel before signing, regardless of whether the platform's output expressed confidence in its analysis.
+
+**Output structure for Reviewer-of-Platform-AI-Output mode:**
+
+```
+# Contract Platform-AI Review — [Contract Title / Counterparty] — [Project]
+Platform: [Procore Contract Review Agent / Trunk Tools Contract Review Agent / Document Crunch / Mastt / Ment Tech / Spellbook / Juro / LegalOn / LexCheck / SuperLegal / other]
+Agent version: [if available]
+Mode (if multi-mode platform): [e.g., Trunk Tools Pre-Signature Review vs. Compliance Guide]
+Reviewer: [name, role]
+Date: [YYYY-MM-DD]
+Contract form / baseline (identified): [AIA A401-2017 / ConsensusDocs 750 / owner-custom benchmarked vs. AIA A401-2017 / etc.]
+Project state: [state, for state-law-conflict cross-checking]
+Counsel-review threshold from config: [$XX,XXX]; contract value: [$XX,XXX]; counsel trigger: [YES / NO]
+
+Platform Output (verbatim or summarized):
+[Full platform output as received, or one-line-per-flag summary]
+
+Review Findings:
+1. Citation accuracy: [Pass / Re-cited: flag-3 was "the indemnity is broad" — re-cited to §13.1.2 second sentence with quoted language]
+2. Walk-away-tier alignment: [Pass / Re-tiered: §11.3 + §8.4 elevated to 🔴 combination trigger per Premier walk-away config (either alone = 🟡; combined = walk)]
+3. Baseline framing: [Pass / Added: §11.3 less protective than AIA A401-2017 §11.3 (pay-when-paid); §8.4 substantially less protective than A401/A201 §8 (preserves time + money remedies)]
+4. Missing protections: [Pass / Added: prompt-payment-act cite Mass. G.L. c. 149 § 29E (missing); lien-waiver exchange schedule (missing); per-project-aggregate endorsement (missing); DR executive escalation step (missing)]
+5. State-law-conflict citations: [Pass / Added: §13.1 broad-form void as to indemnitee sole negligence per Mass. G.L. c. 149 § 29C]
+6. Counter-proposal letter: [Pass / Generated — see below]
+
+Re-Tiered Risk Count (post-review):
+| Tier | Pre-platform | Post-review | Delta |
+|------|--------------|-------------|-------|
+| 🔴 High | [n] | [n] | [+/-] |
+| 🟡 Medium | [n] | [n] | [+/-] |
+| 🟢 Low / Note | [n] | [n] | [+/-] |
+| Missing protections | [n] | [n] | [+/-] |
+
+Counsel-review recommendation: [Required — contract value above config threshold OR ≥1 🔴 item / Optional — neither trigger fired]
+
+Final Redlined Risk Report:
+[Cleaned, negotiation-ready risk report using the standard output structure above, with executive summary, risk-tier table, clause-by-clause analysis, missing-protections, state-law-conflict summary, and counter-proposal letter template]
+
+Pattern Notes (for platform-config feedback):
+[Any gap that recurred across this and prior platform outputs — flag for platform-config improvement (e.g., "Platform consistently misses M-3 per-project-aggregate insurance endorsement requirement — add to platform's missing-protections checklist")]
+
+*This contract risk review was conducted against a platform-AI first-pass output.
+The redlined report above is the final version for counsel review and / or counterparty negotiation.
+AI-assisted review, not legal advice. Construction counsel review is required for any 🔴 item
+and for any contract above the company's $[XX,XXX] counsel-review threshold.
+Reviewed by [name, role] on [date].*
+```
 
 ## Example Output
 

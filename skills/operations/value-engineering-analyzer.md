@@ -4,7 +4,7 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~90-120 min/package"
-version: 2.0
+version: 2.1
 last_eval_score: null
 ---
 
@@ -47,7 +47,7 @@ You are a preconstruction-savvy AI assistant supporting a GC, owner's rep, or ch
 
 **Before you start:**
 
-- Load `config.yml` for company defaults, preferred subs by trade, regional labor-rate awareness, default markup applied to VE savings (the GC's share of saved cost), and any standard exclusions
+- Load `config.yml` for company defaults, preferred subs by trade, regional labor-rate awareness, default markup applied to VE savings (the GC's share of saved cost), any standard exclusions, the **owner's typical hold-period default by project type** (residential-developer-flip 0-yr / commercial-TI tenant-fitout 5–10 yr / corporate-owner-occupier 15-yr / institutional-owner-occupier 30-yr), the **company's LCC-discipline posture** (always-surface-LCC-on-owner-occupier / surface-only-when-asked / never-LCC-for-flip), the **company's CM-contingency policy** (don't-VE-contingency-without-fee-offset / accept-contingency-trade / never), the company's **VE-platform choice** (Procore Datagrid VE / Beam AI cost-reduction / ALICE optioneering / Trunk Tools / general-LLM workflows — see Reviewer-of-Platform-AI sub-mode below), and the company's **buyout-watchlist commitment posture** (e.g., "we commit to a 90-day post-GMP buyout watchlist to chase additional savings during buyout" — used as a closing offer on partial-bundle closes).
 - Reference `knowledge-base/terminology/` for correct CSI MasterFormat division names, system-vocabulary (VRF / VAV / DOAS / packaged rooftop, slab-on-grade vs. structural slab, panelized vs. stick-built, EIFS vs. composite metal panel), and substitution-request procedural vocabulary
 - Reference any `knowledge-base/best-practices/value-engineering.md` if present
 - Note the project state — regional labor rates, alternative-material availability, and code requirements vary by jurisdiction; flag where regional context affects an option
@@ -300,7 +300,7 @@ _VE savings ranges are estimates for discussion. Final savings require sub/vendo
 > - VE-011 (CM contingency reduction) — $22k; recommend hold; if owner pushes, recommend offsetting GC-fee bump
 > - **Beyond the log:** Re-open a structural-grid VE pass for the demising walls (currently slab-to-deck full UL U419 — could portions revert to plenum-only ratings if AHJ accepts? requires AHJ pre-approval and is high-risk for the schedule). Or owner accepts a $76k gap and absorbs into owner contingency (5% / $228k available).
 >
-> Recommended path: take the $171k likely bundle; absorb the remaining $76k into owner contingency with a 90-day buyout-watchlist commitment from CM to find additional savings during sub buyout.
+> Recommended path: take the $171k likely bundle; absorb the remaining $76k into owner contingency with a 90-day buyout-watchlist commitment from CM to find additional savings during sub buyout (per config.yml buyout-watchlist-posture default).
 >
 > ## Owner Decision Memo
 >
@@ -317,3 +317,138 @@ _VE savings ranges are estimates for discussion. Final savings require sub/vendo
 > ---
 >
 > _VE savings ranges are estimates for discussion. Final savings require sub/vendor quotes, architect substitution-request approval, and EOR/AHJ review where applicable. This VE log was prepared with AI assistance and does not replace a formal VE workshop with the design team. CM contingency reduction is a risk-transfer item, not VE; recommend addressing separately from the VE log if pursued._
+
+## Reviewer-of-Platform-AI-Output Sub-Mode
+
+Construction platforms in 2026 increasingly produce AI-generated VE candidate lists from the same estimate / spec / model the GC is already working in: **Procore Datagrid AI VE agent** (summer-2026 broader-availability trajectory; produces VE candidates with savings ranges from line-item estimate + spec parse), **Beam AI cost-reduction recommendations** (estimating-platform-side VE list from the takeoff + estimate), **ALICE Technologies optioneering** (schedule-VE: phasing / sequencing alternates that compress GC duration — McKinsey partnership 35+ clients), **Trunk Tools VE workflow** (spec-substitution candidates from the spec parse), **Document Crunch / Trimble Construction One** (post-acquisition: spec relaxation candidates from CDs + AHJ amendments), **Autodesk Construction Cloud + AI Assistant** (spec + drawing-parse VE candidates), **Togal.AI** (quantity / coverage reduction candidates from the AI takeoff), **STACK** (assembly-substitution VE candidates), and general LLM workflows where the chief estimator pastes the estimate into ChatGPT / Claude and accepts a VE candidate list. The chief estimator / preconstruction lead is then the reviewer-of-AI-output. This sub-mode produces a redline of the platform's VE candidate list before it goes into the VE workshop materials.
+
+When the input is a platform-AI VE list (not a raw estimate), apply this six-point redline check before accepting candidates into the recommended bundle:
+
+1. **Phase-altitude alignment.** Platforms produce VE candidates without checking whether the altitude matches the project phase. A CD-phase project that gets SD-altitude candidates (system change: VRF → packaged rooftop) will mostly reject those candidates; the redline downsizes to phase-appropriate altitude per the Phase / VE-able table above. Flag and drop any candidate whose altitude is one or more tiers above the current phase (e.g., system change proposed at CD; concept-level shape change proposed at DD).
+2. **Life-safety / structural / seismic exclusion check.** Platforms occasionally propose VE candidates that touch life-safety, structural, seismic, smoke evacuation, or egress (e.g., "reduce fire-rating from 2-hr to 1-hr at corridor partition," "reduce shear-wall thickness," "substitute fire-sprinkler heads to less-expensive model without re-running hydraulics"). The redline drops these unconditionally and surfaces them in the "Do Not VE" section. The hard rule applies — no exceptions without EOR review and AHJ re-submission flagged as a required step.
+3. **Owner-constraint compliance.** Platforms do not read the owner's stated constraints (LEED level, occupancy date, accessibility commitments, brand-specific finishes the owner chose, M/W/DBE participation goal). Cross-check every platform candidate against the owner's stated constraints from the input and drop any candidate that breaches a stated constraint. Flag explicitly so the workshop materials show what the platform missed.
+4. **LCC-impact disclosure (the v2.0 seventh category, enforced here).** Platforms typically report first-cost savings without computing the LCC delta over the owner's hold period. For owner-occupier and institutional-owner projects (per config.yml LCC-discipline posture), compute the 20-year (or owner-hold-period) LCC delta for every platform candidate and flag any that are **first-cost-positive / LCC-negative** (e.g., porcelain → LVT in a high-traffic break room over a 15-year hold; lower-SEER HVAC over a 20-year hold; lower-efficacy LED over a 10-year hold). For developer-flip projects, this check is neutralized per config.yml posture.
+5. **Savings-basis credibility.** Platforms generate savings ranges with named or unnamed bases. The redline reads each candidate's basis and rates it H / M / L credibility: H = vendor-specific quote or regional bid-spread within 90 days; M = RSMeans / national-database reference within the current quarter; L = engineer estimate / "industry typical" with no anchor. Any candidate with L credibility is held until a vendor quote or sub-of-record confirmation is in hand; the workshop materials present these as "candidate — pending verification" not "recommended — proceed."
+6. **Approval-path completeness.** Platforms often surface the savings without the implementation path (architect substitution-request / EOR re-stamp / AHJ re-submission / spec-section approved-equal). The redline fills in the missing approval path per the spec section, the project's delivery method (DBB / DB / CMAR / IPD changes who has authority), and the implementation lead time (1 wk substitution request / 4 wk re-design / 8 wk AHJ re-submission). Any candidate whose approval-path lead time exceeds the available pre-NTP window is dropped to "next-tier" rather than "recommended."
+
+Sub-mode output: (a) platform's original AI-generated VE candidate list (preserved verbatim, including savings ranges and any narrative the platform produced), (b) redline applied to each of the six points with phase-altitude downsizing / hard-rule drops / owner-constraint drops / LCC-impact annotations / credibility ratings / restored approval paths, (c) final estimator-accepted VE log ready for the workshop, with **pre-redline-vs-post-redline candidate-count delta** (e.g., platform proposed 24 candidates → 18 accepted-as-is + 4 downsized-by-phase + 2 dropped-on-owner-constraint), (d) provenance footer noting which platform produced the list, which version of its AI (if known), what the redline changed, what the estimator accepted, and a pattern-notes feedback-loop for vendor-config calibration over time (e.g., "platform consistently proposes structural VE on healthcare projects — adjust prompt to exclude structural Pareto items upstream").
+
+## Example Output — Reviewer-of-Platform-AI-Output Sub-Mode (Procore Datagrid AI VE Agent)
+
+**Example input scenario:** Same Brookline MOB TI Phase 2 post-bid GMP-reconciliation as above ($247K gap on $4,797K GMP, 15-yr owner-occupier hold, ICRA Class III/IV maintained, med-gas + slab-to-deck rated joint detail off-limits). The Stonebridge preconstruction lead ran the GMP-reconciliation estimate through Procore Datagrid AI's VE candidate agent (private-beta cohort access). Datagrid produced an 18-candidate VE list:
+
+> **Procore Datagrid AI VE Candidates — Brookline MOB TI Phase 2**
+> 1. Demountable glass partitions → conventional gyp throughout (all 18 walls): $74K
+> 2. Solid-surface countertops → laminate throughout (incl. exam): $24K
+> 3. Carpet tile alternate manufacturer (Shaw → Mohawk): $11K
+> 4. Lighting alternate (Eaton → Lithonia approved-equal): $18K
+> 5. VAV system → packaged rooftop (system change): $89K
+> 6. Reduce demising wall rating from 2-hr to 1-hr at non-corridor locations: $34K
+> 7. Reduce med-gas spec from oxygen-cleaned copper to general copper: $42K
+> 8. Painting 1 prime + 1 finish in all spaces: $14K
+> 9. Door hardware Grade 1 → Grade 2 throughout (incl. main corridor): $19K
+> 10. Casework laminate veneer throughout (incl. exam): $28K
+> 11. Defer break-room flooring porcelain → LVT: $9K
+> 12. Defer interior signage: $14K
+> 13. Reduce CM contingency 3% → 2%: $44K
+> 14. Reduce GC contingency 5% → 3%: $91K
+> 15. Slab-on-grade thickness 5" → 4": $11K
+> 16. Reduce LEED documentation effort (project is not LEED): $3K
+> 17. Compress GC duration 1 wk via single night shift: $11K
+> 18. Substitute fire-sprinkler heads to less-expensive model: $9K
+
+The preconstruction lead is the reviewer-of-AI-output. Apply the six-point redline before accepting into the workshop bundle.
+
+**Expected output:**
+
+> # VE PLATFORM-AI OUTPUT REVIEW — REDLINE
+>
+> **Platform:** Procore Datagrid AI VE agent (private-beta cohort, May 2026)
+> **Subject:** Brookline MOB TI Phase 2 — VE candidate list — Post-bid GMP reconciliation
+> **Reviewed by:** Preconstruction Lead (AI-assisted), Stonebridge Construction
+> **Review Date:** 2026-04-27
+> **Project posture per config.yml:** owner-occupier 15-yr hold = LCC-discipline ON; CM-contingency policy = don't-VE-contingency-without-fee-offset; phase = post-bid GMP reconciliation (system change is mostly out of altitude)
+>
+> ## PLATFORM VE CANDIDATE LIST (PRESERVED VERBATIM)
+>
+> *18 candidates as listed by Procore Datagrid AI, $574K nominal total at the high end if all accepted.*
+>
+> ## SIX-POINT REDLINE
+>
+> **1. Phase-Altitude Alignment — 1 candidate downsized, 1 dropped.**
+> - Candidate 5 (VAV → packaged rooftop) is a **system change** — SD altitude, proposed at post-bid GMP reconciliation phase. **Dropped to "next-tier — would require re-design 8 weeks + EOR re-stamp + AHJ re-submission; not feasible inside NTP window."** Surface in the workshop materials as "platform-proposed, infeasible at this phase" with the rationale.
+> - Candidate 17 (compress GC duration via single night shift) — sequencing / productivity altitude, in-phase. Accept.
+>
+> **2. Life-Safety / Structural / Seismic Exclusion — 3 candidates dropped to "Do Not VE."**
+> - Candidate 6 (reduce demising wall rating from 2-hr to 1-hr at non-corridor locations) — fire-rating reduction; UL U419 listing condition; owner-stated constraint also explicit ("no compromise on slab-to-deck rated joint detail at demising walls"). **Dropped — Do Not VE.** Hard rule + owner constraint.
+> - Candidate 7 (reduce med-gas spec from oxygen-cleaned copper to general copper) — NFPA 99 condition; owner-stated constraint also explicit. **Dropped — Do Not VE.** Hard rule + owner constraint + code.
+> - Candidate 18 (substitute fire-sprinkler heads to less-expensive model) — fire-suppression system; hard rule says no without EOR review + AHJ re-submission; hydraulic-calc impact not evaluated by platform. **Dropped — Do Not VE.** Hard rule.
+> - Candidate 15 (slab-on-grade thickness 5" → 4") — structural; outside ICRA Class III/IV demolition / repour during occupied operations is not viable; even if structurally OK, the candidate touches the structural design. **Dropped — Do Not VE.** Hard rule.
+>
+> **3. Owner-Constraint Compliance — 2 candidates dropped (overlapping with #2).**
+> - Already captured in #2: candidates 6 + 7 breach explicit owner constraints. No additional candidate drops at this point.
+> - Candidate 16 (reduce LEED documentation effort) — project is not LEED per the input; the platform proposed a candidate that does not apply. **Dropped — does-not-apply (no actual savings to capture).**
+>
+> **4. LCC-Impact Disclosure — 4 candidates LCC-annotated.**
+> - Candidate 1 (demountable → gyp, all 18 walls): platform proposed *all* walls. The v2.0 example carved 12 non-exam + 6 exam (retain demountable at exam for reconfigurability over 15-yr hold). The platform's full-stripout would deprive owner of $42K NPV reconfigurability benefit at exam over 15-yr hold. **Downsize to non-exam only (12 walls) — accept $58K of the $74K platform claim; LCC-aligned.**
+> - Candidate 2 (solid-surface → laminate throughout, incl. exam): exam-room counters drive cleanability; LCC penalty of laminate edge-wear over 15-yr at exam stations exceeds the first-cost saving. **Downsize to non-exam only — accept $18K of the $24K platform claim; LCC-aligned.**
+> - Candidate 10 (casework laminate veneer throughout, incl. exam): exam casework drives medical-cleanability; same LCC reasoning. **Downsize to non-exam only — accept $13K of the $28K platform claim; LCC-aligned.**
+> - Candidate 11 (defer break-room flooring porcelain → LVT): **flag as first-cost-positive / LCC-negative over 15-yr hold** (porcelain 25-yr vs. LVT 10-15-yr; $4-8K LCC penalty against $9K likely first-cost saving). Surface to owner with the LCC framing; not auto-accepted.
+>
+> **5. Savings-Basis Credibility — 3 candidates dropped or held.**
+> - Candidate 13 (CM contingency 3% → 2%, $44K) — not VE; risk transfer. Per config.yml CM-contingency policy "don't-VE-contingency-without-fee-offset," **hold and surface as risk-transfer-not-VE to the owner** with the recommended GC-fee bump offset.
+> - Candidate 14 (GC contingency 5% → 3%, $91K) — not VE; risk transfer; same posture. **Hold; not recommended at the workshop without offsetting risk-allocation discussion.** Additionally, dropping owner's contingency from 5% to 3% on a TI of this complexity (occupied healthcare adjacencies; ICRA discipline; med-gas; rated demising) leaves only $137K cushion on a $4.55M cap — historically tight.
+> - Candidate 9 (door hardware Grade 1 → Grade 2 throughout, including main corridor) — main corridor hardware is the spec floor (Grade 1 in main corridor + exam; Grade 2 acceptable in back-of-house). Platform over-reached. **Downsize to non-corridor only — accept $6K of the $19K platform claim.**
+>
+> **6. Approval-Path Completeness — Restored on accepted candidates.**
+> - Candidates 1 (demountable substitution), 2 (countertop substitution), 3 (carpet manufacturer), 4 (lighting alternate), 5 (already dropped), 9 (door hardware grade), 10 (casework veneer): architect via CSI 13.1 substitution request; 1–2 weeks each.
+> - Candidate 8 (painting 1 prime + 1 finish in mech / storage only — downsize from "all spaces"; retain 1+2 in occupied per spec): architect + owner sign-off on sample; 1 week.
+> - Candidate 12 (defer signage): owner-direct contract post-occupancy; 1 day.
+> - Candidate 17 (compress GC duration via shift change): CM operational decision; 1 day to commit.
+>
+> ## ACCEPTED VE LOG (POST-REDLINE)
+>
+> | VE# | Title | Savings (low/likely/high) | Notes |
+> |---|---|---|---|
+> | VE-001 | Demountable → gyp at 12 non-exam offices (downsized from platform's "all 18 walls") | $48k / $58k / $68k | LCC-aligned per redline |
+> | VE-002 | Solid-surface → laminate at non-exam only (downsized) | $14k / $18k / $22k | LCC-aligned per redline |
+> | VE-003 | Carpet tile alternate (Shaw → Mohawk) | $8k / $11k / $14k | Accept as-platform |
+> | VE-004 | Lighting alternate (Eaton → Lithonia) | $14k / $18k / $22k | Accept; +1wk lead shorter |
+> | VE-006 | Painting 1 prime + 1 finish in mech / storage only (downsized from "all spaces") | $5k / $7k / $9k | Retain 1+2 in occupied per spec |
+> | VE-007 | Door hardware Grade 1 → Grade 2 at non-corridor only (downsized) | $4k / $6k / $8k | Main corridor + exam retain Grade 1 |
+> | VE-008 | Casework laminate veneer at non-exam only (downsized) | $9k / $13k / $17k | LCC-aligned |
+> | VE-009 | Defer break-room porcelain → LVT (flagged LCC-negative) | $6k / $9k / $12k | Surface to owner with LCC framing |
+> | VE-010 | Defer interior signage (post-occupancy) | $11k / $14k / $17k | Accept |
+> | VE-012 | Compress GC duration 1 wk via single night shift | $8k / $11k / $14k | Accept; -7 days schedule |
+>
+> **Total likely savings (post-redline):** $165K (vs. platform's $574K nominal max) — closes ~67% of $247K gap with the recommended-or-flagged set. Pair with owner contingency for the residual ~$82K + 90-day buyout watchlist commitment per config.yml.
+>
+> ## DO NOT VE (RESTORED FROM REDLINE)
+>
+> - **Candidate 5 — VAV → packaged rooftop:** dropped on phase-altitude (SD altitude proposed at post-bid; 8-wk re-design + EOR + AHJ infeasible inside NTP window)
+> - **Candidate 6 — demising wall rating reduction:** owner constraint + UL listing + code
+> - **Candidate 7 — med-gas spec relaxation:** owner constraint + NFPA 99
+> - **Candidate 15 — SOG thickness reduction:** structural + ICRA occupied-operations re-pour infeasibility
+> - **Candidate 16 — LEED documentation reduction:** does not apply (project is not LEED)
+> - **Candidate 18 — sprinkler-head substitution:** life-safety; hard rule; hydraulic re-calc impact not evaluated
+>
+> ## HOLD — RISK TRANSFER (NOT VE)
+>
+> - **Candidate 13 — CM contingency 3% → 2%:** $44K savings; surface as risk-transfer with recommended GC-fee bump offset
+> - **Candidate 14 — GC contingency 5% → 3%:** $91K savings; not recommended at this complexity
+>
+> ## PROVENANCE + PATTERN NOTES
+>
+> - **Platform:** Procore Datagrid AI VE agent (private-beta cohort, May 2026)
+> - **Pre-redline candidate count:** 18
+> - **Accepted (recommended or discuss):** 10
+> - **Downsized (LCC or scope):** 5 (candidates 1, 2, 8, 9, 10)
+> - **Dropped to Do Not VE:** 6 (candidates 5, 6, 7, 15, 16, 18)
+> - **Held — risk transfer (not VE):** 2 (candidates 13, 14)
+> - **Pattern notes for Procore Datagrid AI VE feedback-loop:**
+>   - Datagrid consistently proposes structural / fire-rating VE on healthcare projects — feed back the rule "exclude life-safety, structural, seismic, fire-rating candidates" upstream
+>   - Datagrid did not weight the owner's 15-yr hold against LCC — feed back the owner-hold-period parameter so LCC-negative candidates get auto-annotated
+>   - Datagrid did not respect the owner-stated-constraint list (med-gas, rated joint) — feed back the constraint list as input filter
+>   - Datagrid proposed contingency reduction as VE — re-label as risk-transfer-not-VE
+>   - Datagrid over-applied substitutions to all spaces (demountable / hardware / casework / countertops) when the right answer was non-exam / non-corridor only — feed back the "downsize-by-zone" rule
+> - **Disclaimer:** This redline is AI-assisted. VE candidates require formal architect substitution-request approval, EOR re-stamp where applicable, and AHJ re-submission where applicable. The platform's first-pass savings reduction (~$574K → $165K accepted) reflects the LCC-discipline, hard-rule, and owner-constraint filters that distinguish a VE workshop from a candidate-generation exercise.
