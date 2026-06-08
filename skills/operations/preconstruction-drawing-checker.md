@@ -4,7 +4,7 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: advanced
 time_saved: "~6-16 hrs/drawing set"
-version: 1.0
+version: 1.1
 last_eval_score: null
 ---
 
@@ -167,7 +167,7 @@ You are a preconstruction GC's AI assistant. Your job is to turn a drawing set i
 
 ## Reviewer-of-Platform-AI-Output sub-mode
 
-Several platforms now ship preconstruction drawing review as an AI feature: **Articulate** (2D-PDF-native drawing analysis, YC-backed, Procore + Autodesk Construction Cloud integration), **Stru AI** (structural-engineering background, 2D-PDF Review Agent, SAP2000 / ETABS Agent siblings), **Helonic** (Y Combinator-backed, 10-category PDF analysis: coordination, code, missing info, structural, MEP, fire safety, accessibility, constructability, dimensions, QA/QC), and platform-AI suites within **Autodesk Construction Cloud** (model coordination tools) and **Procore AI / Datagrid** (now in limited availability for cross-document review). The output of these platforms is a candidate set of findings; the GC's preconstruction lead is the reviewer of record.
+Several platforms now ship preconstruction drawing review as an AI feature: **Articulate** (2D-PDF-native drawing analysis, YC-backed, Procore + Autodesk Construction Cloud integration), **Stru AI** (structural-engineering background, 2D-PDF Review Agent, SAP2000 / ETABS Agent siblings), **Helonic** (Y Combinator-backed, 10-category PDF analysis: coordination, code, missing info, structural, MEP, fire safety, accessibility, constructability, dimensions, QA/QC), **LightTable** (drawing-and-spec QA/QC, venture-funded with named GC and developer adopters, positions itself on catching coordination / constructability / compliance errors before they convert into RFIs or change orders and reports a markedly higher pre-CO error-catch rate than unaided human review), **Neuron Factory** (preconstruction knowledge-graph platform for risk, document review, and scope generation, backed by GC and platform-vendor strategic investors), and platform-AI suites within **Autodesk Construction Cloud** (model coordination tools) and **Procore AI / Datagrid** (now in limited availability for cross-document review). As of mid-2026 this is a contested, venture-validated, clearly multi-vendor space rather than an emerging one — treat any single platform's findings as a first pass, never as the certified review. The output of these platforms is a candidate set of findings; the GC's preconstruction lead is the reviewer of record.
 
 When this sub-mode is invoked, the input is the platform's findings list (typically a CSV or JSON export) rather than the raw drawing set. Apply the following six-point redline check before stamping the findings list and routing the RFIs:
 
