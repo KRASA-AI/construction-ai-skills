@@ -4,7 +4,7 @@ category: admin
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~45-75 min per backcharge package"
-version: 1.0
+version: 1.1
 last_eval_score: null
 ---
 
@@ -22,9 +22,9 @@ Do **not** use this skill to draft a punch-list item (which is a closeout-cycle 
 
 ## Required Input
 
-Provide the following:
+Provide the following. The contract **form** (item 1), burdened labor **rates** (item 6), the silent-contract cure **window** (item 4), OH&P percentage, notice-delivery channel, CC list, and approval thresholds are **supplied by `config.yml` when configured** — do not re-enter them; the skill applies the configured defaults and names them on the cover memo's "Applied config" line. You still provide the case-specific facts (what the defect is, the actual notice history, the actual costs incurred).
 
-1. **Subcontract / PO basis** — Contract or PO number, contract form (AIA A401 / ConsensusDocs 750 / GC custom / PO), and the specific clause that authorizes deduction from payment (typical clauses: right-of-offset, deduction from payment, default and remedies, indemnity, cleanup, cooperation with other trades). If the contract has no offset/deduction clause, flag this — backcharges are contractual, not statutory, and may not be enforceable.
+1. **Subcontract / PO basis** — Contract or PO number, contract form (defaults to `standard_subcontract_form` from config; override only if this subcontract differs), and the specific clause that authorizes deduction from payment (typical clauses: right-of-offset, deduction from payment, default and remedies, indemnity, cleanup, cooperation with other trades). If the contract has no offset/deduction clause, flag this — backcharges are contractual, not statutory, and may not be enforceable.
 2. **Defect description** — What is wrong, where on the project (location, level, grid, room number), how many SF/LF/EA/units, when first observed, and how it was discovered (walk-through, inspection failure, downstream-trade complaint, owner complaint, RFI). Include photo and video reference numbers if available.
 3. **Notice timeline so far** — Any verbal notices, emails, daily-log entries, or 7-day letters already sent. Date and method of each. If the sub has already responded (rejected, partial-fix offered, no response), note it.
 4. **Contract notice provision** — How the subcontract requires notice (written / certified / hand-delivered / project-management-platform notification). Cure window length per the contract (commonly 24, 48, 72 hours, or 7 days; sometimes "reasonable time"). If the contract is silent, default to a documented industry-reasonable window.
@@ -39,7 +39,14 @@ Provide the following:
 You are a construction contract administrator's AI assistant drafting a backcharge package. Your job is to produce documents that survive the three reviews every backcharge eventually faces: the sub's project manager rejecting it on the next pay app, the sub's attorney arguing it in mediation, and a year-later auditor reconstructing the chain. The single biggest reason backcharges get reversed is missing or weak notice — write every notice as if it will be Exhibit A.
 
 **Before you start:**
-- Load `config.yml` for the GC's burdened in-house labor rates, default cure-window length when the contract is silent, default OH&P on remediation (if the firm and contract allow it), preferred notice-delivery channel, and CC list for backcharge notices (typically PM, super, contract admin, AP, risk manager)
+- Load `config.yml` and **apply these values as active defaults so the user does not re-enter them on every backcharge.** Do not re-ask for any value config supplies; instead state what was assumed on the cover memo's "Applied config" line so a wrong default is visible rather than silent:
+  - **`burdened_labor_rates`** (foreman / carpenter / laborer / operator, etc.) — drive the in-house-labor lines of the cost worksheet directly; do not ask the user for an hourly rate the config already sets.
+  - **`default_cure_window`** — the firm's standard cure window when the subcontract is silent (default 48 hours for non-emergency if unset). Use the configured value, not the generic default, and still flag if the contract specifies a different window.
+  - **`default_remediation_ohp`** — the firm's standard OH&P percentage on remediation; apply it **only** when the cited clause authorizes markup (the clause check governs; config supplies the number, not the entitlement).
+  - **`standard_subcontract_form`** — the firm's default form (AIA A401 / ConsensusDocs 750 / GC-custom / PO) so clause-number references default to that form's numbering instead of asking which form governs. Confirm only if the named subcontract clearly uses a different form.
+  - **`notice_delivery_channel`** — the firm's standard external-notice method (e.g., email + Procore + USPS Certified); populate the "Delivery:" line of each external notice by default. Still honor any stricter contract-required method.
+  - **`backcharge_cc_list`** and **`approval_thresholds`** — the standing CC distribution (PM, super, contract admin, AP, risk manager) and the dollar thresholds that trigger Project-Executive / Risk-Manager / Controller signoff on Document 4. Use the configured thresholds verbatim in the Deduction Authorization Letter rather than the generic $5,000 / $25,000 placeholders.
+  - **`company_name` / `default_pm_identity`** — header defaults so the four documents populate without re-prompting for who is sending them.
 - Reference `knowledge-base/terminology/` for the right vocabulary (notice-to-cure vs. notice-of-default, deduction-from-payment vs. setoff, defective vs. non-conforming work)
 - Reference `knowledge-base/best-practices/subcontractor-risk/` if present
 - Reference `knowledge-base/regulations/lien-waivers-by-state.md` for the state context — a sub who disputes a backcharge can lien for the full unpaid balance, and lien notice/timing rules vary by state
@@ -99,7 +106,7 @@ You are a construction contract administrator's AI assistant drafting a backchar
    - Backcharge amount and reference to Documents 1–3
    - Tax / sales-tax handling (deductions are typically applied gross of tax; confirm with controller)
    - Lien-waiver impact: deducting reduces the amount owed but does not waive the sub's lien rights for the disputed portion — flag this so AP coordinates with the lien-waiver process
-   - Approval signatures per company policy (typically PM + Project Executive + Risk Manager or Controller for backcharges over a configured threshold)
+   - Approval signatures per company policy, using the `approval_thresholds` from config (typically PM + Project Executive + Risk Manager over the first configured threshold, plus Controller over the second). Use the configured dollar figures, not generic placeholders
 
 3. Build the itemized cost worksheet (show the math; never just a total):
 
@@ -165,6 +172,7 @@ Markdown package containing four documents in sequence:
 
 ## Cover Memo
 - Defect: [one-sentence description with location and quantity]
+- Applied config: [one line naming what was assumed from config.yml — e.g., "rates: burdened (foreman $96/hr); cure window: 48 hr default; OH&P: 10% (clause-authorized); subcontract form: AIA A401; delivery: email + Procore + Certified; approval thresholds: $5k/$25k". Omit only if config supplied nothing.]
 - Contract clause(s) cited: [§X.X — title]
 - Cure window: [duration; whether contract-defined or industry-reasonable]
 - Cure performed by: [in-house / replacement sub name]

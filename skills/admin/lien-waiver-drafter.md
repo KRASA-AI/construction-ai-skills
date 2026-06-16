@@ -4,7 +4,7 @@ category: admin
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~30-45 min per waiver package"
-version: 1.0
+version: 1.1
 last_eval_score: null
 ---
 
@@ -22,9 +22,9 @@ Do **not** use this skill to draft a final unconditional waiver in advance of pa
 
 ## Required Input
 
-Provide the following:
+Provide the following. The **claimant identity block** (item 3 — legal name, address, per-state license number), the firm's **default project state**, **delivery/notarization preference** (item 9), recurring **upstream-party requirements**, and the **counsel-review threshold** are **supplied by `config.yml` when configured** — do not re-enter them; the skill applies the configured defaults and names them on the cover memo's "Applied config" line. When this skill runs alongside the backcharge or pay-app skills for the same period, the disputed and withheld carve-outs (item 5) are auto-pulled rather than re-entered.
 
-1. **Project state and project type** — Project state (drives whether a statutory form is mandatory and whether notarization is required) and project type (private commercial, private residential, federal, state public, owner-occupied single-family). State and project type together determine the waiver form, the notice-of-completion / notice-of-cessation interaction, and whether Miller Act / state-bond-claim language replaces lien language.
+1. **Project state and project type** — Project state (drives whether a statutory form is mandatory and whether notarization is required; defaults to `default_project_state` from config when not separately stated) and project type (private commercial, private residential, federal, state public, owner-occupied single-family). State and project type together determine the waiver form, the notice-of-completion / notice-of-cessation interaction, and whether Miller Act / state-bond-claim language replaces lien language.
 2. **Waiver moment in the payment cycle** — One of the four canonical moments: (a) **Conditional on Progress Payment** (waives lien rights through a stated date upon clearance of a specific progress payment), (b) **Unconditional on Progress Payment** (waives through a stated date, immediately and irrevocably), (c) **Conditional on Final Payment** (waives all lien rights for the project upon clearance of final payment), or (d) **Unconditional on Final Payment** (waives all lien rights, immediately and irrevocably). If the upstream contractor has asked for an unconditional waiver and payment has not yet cleared, flag this as a substitution risk and recommend the conditional form.
 3. **Parties, project, and consideration** — Claimant (the party signing the waiver) name, address, license number where applicable; project owner; project name and address; the upstream contractor or owner the waiver runs to; the contract or PO number; the dollar amount of the consideration ("the sum of $X" — the specific progress draw or the final payment that triggers the waiver).
 4. **Through-date** — The date through which lien rights are being waived. For a progress waiver, this is normally the period-ending date on the corresponding pay application (G702 or owner-equivalent); for a final waiver, it is the project's substantial completion or final completion date. The through-date must match the pay-app period-ending; a mismatch is the most common reason a waiver is later rejected at audit or unwound in dispute.
@@ -41,7 +41,13 @@ You are a construction contract administrator's AI assistant drafting a lien wai
 
 **Before you start:**
 
-- Load `config.yml` for the contractor's default-state preferences, preferred delivery method (notarized PDF / e-sign / paper original), default carve-out posture (whether to default to listing all pending COs and disputed sums or only those expressly identified), and the threshold above which counsel review is recommended
+- Load `config.yml` and **apply these values as active defaults so the contractor does not re-enter them on every waiver.** Do not re-ask for any value config supplies; state what was assumed on the cover memo's "Applied config" line so a wrong default is visible rather than silent:
+  - **`claimant_identity`** — the firm's own legal name, mailing address, and the **per-state contractor/mechanic license numbers** (the field most often re-typed each waiver). When the claimant is this firm, populate the claimant block from config rather than asking; pull the license number matching the project state automatically.
+  - **`default_project_state`** and **`home_jurisdictions`** — the firm's primary state(s) of work, so statutory-form selection defaults to the configured state when the project state is not separately stated. Always confirm the project state if a waiver is for a state outside `home_jurisdictions`.
+  - **`standard_upstream_parties`** — a config map of the firm's recurring GCs/owners/lenders (and any party-specific waiver-form or notarization requirements they impose). When the upstream party is on this list, apply their known requirement (e.g., "Lender X always requires notarization") without re-asking.
+  - **`delivery_method`** (notarized PDF / e-sign / paper original), **`notarization_default`**, and **`counsel_review_threshold`** — apply directly to the cover memo and the counsel-review flag instead of prompting.
+  - **`carve_out_posture`** — whether to default to listing all pending COs and disputed sums or only those expressly identified.
+- When run alongside `admin/backcharge-notice-drafter.md` or a pay-app review for the same period, **auto-pull** the disputed backcharge amount and the separately-withheld retainage as carve-outs rather than asking the user to re-enter them.
 - Reference `knowledge-base/regulations/lien-waivers-by-state.md` for the controlling state framework — whether a statutory form is mandatory, whether notarization is required, what the four canonical moments are called in that state, and the lien-filing deadline pattern. **This reference is the single source of truth for state form selection; do not improvise a form for a state you cannot match to the reference**
 - Reference `knowledge-base/terminology/` for canonical terminology (waiver vs. release, conditional vs. unconditional, progress vs. final, retainage vs. retention)
 - If the project is federal or state public, switch the lien-rights frame to bond-claim rights (Miller Act for federal, the analogous state "Little Miller Act" for state public) and use bond-claim-waiver language rather than lien-waiver language
@@ -103,7 +109,8 @@ Markdown package containing the waiver and a transmittal cover:
 
 ## Cover Memo
 - Project: [name, location, owner]
-- Claimant: [name, license number where required]
+- Applied config: [one line naming what was assumed from config.yml — e.g., "claimant: Premier Drywall, TX license M-44129 (from config); delivery: notarized PDF; counsel threshold: $250k; carve-outs auto-pulled from Backcharge #BC-014". Omit only if config supplied nothing.]
+- Claimant: [name, license number where required — from config `claimant_identity` when the claimant is this firm]
 - Upstream party: [GC / owner / contractor]
 - Waiver moment: [Conditional on Progress / Unconditional on Progress / Conditional on Final / Unconditional on Final]
 - Project state: [state]; statutory form required: [yes / no]; notarization required: [yes / no]

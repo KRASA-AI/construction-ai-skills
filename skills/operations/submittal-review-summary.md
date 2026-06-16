@@ -4,7 +4,7 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~30-45 min/submittal"
-version: 3.1
+version: 3.2
 last_eval_score: null
 ---
 
@@ -22,7 +22,7 @@ Use the **Reviewer-of-Platform-AI-Output sub-mode** when a platform AI tool has 
 
 ## Required Input
 
-Provide the following:
+Provide the following. Items 4 (turnaround), 7 (sub-mode platform), the stamp set, and the substitution procedure are **supplied by `config.yml` when configured** — do not re-enter them; the skill applies the configured defaults and states them on the "Applied config" line.
 
 1. **Submittal package** — Product data, shop drawings, sample info, or cut sheets the sub/vendor submitted
 2. **Relevant spec section(s)** — The CSI section(s) the submittal is supposed to comply with (e.g., 05 12 00 Structural Steel, 08 71 00 Door Hardware, 23 09 00 Instrumentation & Controls)
@@ -37,10 +37,15 @@ Provide the following:
 You are a construction project engineer's AI assistant reviewing a submittal. Your job is to be precise about deviations, use the correct stamp language, and surface coordination risks early — vague "looks good" reviews cause rework and claim fodder.
 
 **Before you start:**
-- Load `config.yml` from the repo root for the company's standard review stamp options, turnaround policy, and substitution request procedure
+- Load `config.yml` from the repo root and **apply these values as active defaults so the reviewer does not re-state them on every submittal**. Do not re-ask for any value `config.yml` already supplies; instead state what was assumed on the "Applied config" memo header line (below) so a wrong assumption is visible rather than silent:
+  - **`standard_submittal_platform`** (Procore Submittals / Newforma Vojo / Submittal Exchange / Autodesk Construction Cloud / Bluebeam Studio / paper-form fallback) — assume this is the log and export shape by default, so submittal-number / revision / turnaround fields and the platform's column layout are parsed without asking "which tool is this logged in?" Only confirm the shape if the pasted data clearly does not match the configured platform. In Reviewer-of-Platform-AI-Output sub-mode, if the firm's platform ships a paired AI reviewer (Procore Datagrid AI on Procore Submittals; Trunk Tools TrunkSubmittal; Newforma Vojo's agent on Newforma), pre-load that tool's known gap pattern into the six-point checklist by default rather than asking which AI produced the first pass.
+  - **`allowed_dispositions_by_owner` / `standard_stamp_set`** — the firm's standard review-stamp wording, and any owner-specific restricted sets (e.g., an owner that restricts to "Approved / Approved as Noted / Rejected" instead of the four-stamp NET/MCN/R&R/REJ set). Use the configured stamp wording in the output; do not default to the generic four-stamp set when config maps this owner/project to a restricted set.
+  - **`submittal_turnaround_policy`** — the firm/contract standard review-turnaround window (default 10–15 working days if unset). Use the configured value when computing "Days used vs. days allowed" and the 80%-of-window flag, rather than the generic default.
+  - **`substitution_procedure`** — the firm's standard substitution-request form and window (CSI 13.1A/13.2A or the project equivalent, and the allowed-substitution window). Apply this when classifying a substitution rather than re-asking which form the project requires.
+  - **`reviewer_identity`** (default reviewer name/role) and **`company_name`** — header defaults so the memo is populated without re-prompting.
 - Reference `knowledge-base/terminology/` for CSI division names and review-stamp conventions
 - Reference `knowledge-base/best-practices/submittals/` if present
-- Note that not every project allows all four stamps — some owners restrict to "Approved / Approved as Noted / Rejected"; match the contract's allowed dispositions
+- Note that not every project allows all four stamps — some owners restrict to "Approved / Approved as Noted / Rejected"; match the contract's allowed dispositions (use the `allowed_dispositions_by_owner` mapping from config first; fall back to the four-stamp set only when config does not map this owner)
 
 **Process:**
 
@@ -90,9 +95,10 @@ Markdown memo with this structure:
 **Submittal #:** 05 12 00-001 Rev 1
 **Spec Section:** 05 12 00 – Structural Steel
 **Submitted by:** [Sub] on [Date]
-**Reviewer:** [Name], [Role]
-**Recommended Disposition:** [Stamp]
-**Required turnaround:** [Days per spec] — [Days used]
+**Reviewer:** [Name, Role — from config `reviewer_identity` unless overridden]
+**Recommended Disposition:** [Stamp — from the config-allowed stamp set for this owner]
+**Required turnaround:** [Days per spec/config] — [Days used]
+**Applied config:** [one line naming what was assumed from config.yml — e.g., "platform: Procore Submittals; stamp set: NET/MCN/R&R/REJ; turnaround: 14 working days; substitution form: CSI 13.1A". Omit only if config supplied nothing.]
 
 ## Summary (1–3 sentences)
 [What this submittal is and the headline recommendation.]
