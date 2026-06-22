@@ -4,7 +4,7 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~4-8 hrs/bulletin"
-version: 1.0
+version: 1.1
 last_eval_score: null
 ---
 
@@ -125,11 +125,11 @@ You are a construction project engineer's AI assistant. Your job is to turn a dr
 
 ### Sub-Mode: Reviewer-of-Platform-AI-Output
 
-When the input includes a pre-processed delta report from a platform AI tool (Trunk Tools TrunkReview, Articulate, Procore AI drawing comparison, Autodesk Build / PlanGrid version comparison, Bluebeam Studio compare, or any other AI-powered drawing-diff tool), this skill switches to redline-review mode. Treat the platform's output as a first-pass that catches most clouded changes and many unclouded ones, but apply the same 10-point hard-rule check and the defensibility self-check before the delta package is distributed.
+When the input includes a pre-processed delta report from a platform AI tool (Trunk Tools TrunkReview — now part of the Trunk Tools Cortex drawing-intelligence layer launched mid-2026, which markets patent-pending change-narrative generation and explicitly claims to surface changes the architect did **not** cloud; Procore's Datagrid-embedded drawing/Deep Search agents; Articulate; Autodesk Build / PlanGrid version comparison; Bluebeam Studio compare; or any other AI-powered drawing-diff tool), this skill switches to redline-review mode. Treat the platform's output as a first-pass that catches most clouded changes and — increasingly — claims to catch unclouded ones, but apply the same 10-point hard-rule check and the defensibility self-check before the delta package is distributed. As of mid-2026 this is a venture-funded, contested multi-vendor category (Trunk Tools' Cortex launch alone powers seven drawing-trained workflow agents), so the question is no longer "did a tool look at the bulletin" but "who independently confirms the delta is complete before it goes to the field." A marketed unclouded-change capability is a reason to verify it, not a reason to skip verification.
 
 Common platform gaps to check (pattern across multiple vendor outputs):
 
-1. **Unclouded-change coverage.** Platform tools trained on revision clouds tend to under-report unclouded changes (note revisions, keynote renumbering, dimension corrections). Flag any sheet where the platform lists zero unclouded changes — that is rare on a real bulletin and usually means the tool stopped at the clouds.
+1. **Unclouded-change coverage.** Platform tools trained on revision clouds have historically under-reported unclouded changes (note revisions, keynote renumbering, dimension corrections). Flag any sheet where the platform lists zero unclouded changes — that is rare on a real bulletin and usually means the tool stopped at the clouds. **Newer drawing-intelligence layers (e.g., Trunk Tools Cortex / TrunkReview) now explicitly market catching "changes the architect didn't cloud."** Do not take that claim at face value on a given bulletin: spot-verify the platform's unclouded-change list against a manual full-set comparison of at least the highest-risk sheets (those touching the look-ahead, fabrication-released scope, or the critical path). A vendor claiming complete unclouded coverage raises the value of an independent confirmation, not lowers it — the cost of one missed keynote-level spec change (e.g., a silent filter or assembly substitution) is borne by the GC, not the platform.
 2. **Superseded-submittal linkage.** Platforms rarely cross-reference the submittal log. Add superseded-submittal flags manually using the submittal log.
 3. **RFI cross-reference.** Platforms rarely cross-reference the RFI log. Add answered-RFI and new-RFI flags manually.
 4. **CO classification.** Platforms often flag "scope change" without classifying it as clarification, conflict resolution, code compliance, or genuine scope addition. Re-classify per the taxonomy.
