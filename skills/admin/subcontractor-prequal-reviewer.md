@@ -4,7 +4,7 @@ category: admin
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~45-90 min/sub"
-version: 1.1
+version: 1.2
 last_eval_score: null
 ---
 
@@ -20,10 +20,10 @@ Use this skill when a GC or CM is onboarding a new sub, refreshing an annual pre
 
 ## Required Input
 
-Provide the following:
+Provide the following. The **GC minimum requirements** (item 1) — baseline insurance minima, required endorsements, EMR/TRIR/DART ceilings, bonding and surety-rating floors, the prequal platform, and the two-tier upset thresholds — are **supplied by `config.yml` when configured** — do not re-enter them; the skill applies the configured baseline and names it on the memo's "Applied config" line. You still provide the sub's packet (items 3–9) and the **project-specific uplift** (item 2) that differs from the configured baseline.
 
-1. **GC minimum requirements** — The GC's baseline for insurance (GL per occurrence / aggregate, auto, umbrella, WC, professional, pollution, cyber if relevant), additional insured endorsement, waiver of subrogation, primary & non-contributory, EMR ceiling, minimum years in business, bonding capacity threshold
-2. **Project-specific requirements** — Any uplift vs. baseline (e.g., $5M umbrella for a hospital project, pollution policy for demolition, builder's risk waiver of subrogation)
+1. **GC minimum requirements** — The GC's baseline for insurance (GL per occurrence / aggregate, auto, umbrella, WC, professional, pollution, cyber if relevant), additional insured endorsement, waiver of subrogation, primary & non-contributory, EMR ceiling, minimum years in business, bonding capacity threshold. **Defaults entirely from config** (`gc_insurance_baseline`, `safety_ceilings`, `bonding_requirements`, `surety_rating_floor`) — supply this item only to override the configured baseline for a specific GC entity.
+2. **Project-specific requirements** — Any uplift vs. baseline (e.g., $5M umbrella for a hospital project, pollution policy for demolition, builder's risk waiver of subrogation). **This is the main thing you provide** — the project's risk profile and the uplift it drives on top of the configured baseline.
 3. **Sub's COI** — Acord 25 or equivalent, with all pages including endorsements
 4. **Sub's safety package** — EMR letter (3 years ideally), TRIR / DART calculations, OSHA 300/300A logs (most recent 3 years), written safety program table of contents
 5. **Sub's financial snapshot** — CPA-compiled or reviewed financials (balance sheet, income statement), bank reference, D&B score if available, bonding letter with single & aggregate limits
@@ -37,7 +37,13 @@ Provide the following:
 You are a construction risk manager's AI assistant. Your job is to read every page of a prequal packet, cross-check it against the GC's standard, and flag every gap clearly enough that the sub can respond in one email. Be pedantic about expiration dates and coverage language — these are the details that blow up projects.
 
 **Before you start:**
-- Load `config.yml` from the repo root for: (a) the GC's standard insurance requirements (GL / Auto / Umbrella / WC / Pro / Pollution per-line minima, additional-insured endorsement form preference, waiver-of-subrogation requirement, primary-and-non-contributory requirement, per-project-aggregate requirement), (b) EMR ceiling and TRIR / DART ceilings by trade family, (c) preferred sureties and the GC's surety-rating floor (typically A- VIII or better), (d) the GC's project-state list for state-specific contractor-license verification, (e) the GC's prequal-prequalification-platform choice (TradeTapp / Procore Prequalification AI / Highwire / Avetta / ISNetworld / BROWZ / COMPASS — see Reviewer-of-Platform-AI sub-mode below), and (f) the GC's two-tier upset thresholds (e.g., "Approved with conditions" vs. "Not approved at this time"). Config.yml should also state the GC's MBE/WBE/DBE-tracking convention.
+- Load `config.yml` and **apply these values as active defaults so the user does not re-enter the GC's standing requirements on every prequal.** Do not re-ask for any value config supplies; instead state what was assumed on the memo's "Applied config" line so a wrong default is visible rather than silent. The user supplies the sub's packet and the project-specific uplift; config supplies the standing baseline the packet is measured against:
+  - **`gc_insurance_baseline`** — the GC's standard GL / Auto / Umbrella / WC / Pro / Pollution per-line minima, additional-insured endorsement-form preference (CG 20 10 / CG 20 37 editions), waiver-of-subrogation requirement, primary-and-non-contributory requirement, and per-project-aggregate requirement. Populate the "GC Standard" column of the requirements-vs-submitted matrix directly from this; do not ask the user to restate baseline minima.
+  - **`safety_ceilings`** — EMR ceiling and TRIR / DART ceilings **by trade family**; apply the trade-matched ceiling to the sub's metrics automatically based on the scope being bid.
+  - **`bonding_requirements`** and **`surety_rating_floor`** — the single/aggregate bonding multipliers against contract value and backlog, and the surety-rating floor (typically A- VIII or better); apply as the default pass/fail test on the bonding letter.
+  - **`prequal_platform`** — the GC's prequalification platform (TradeTapp / Procore Prequalification AI / Highwire / Avetta / ISNetworld / BROWZ / COMPASS); when set, assume the input may be a platform-AI summary and pre-load that platform's known gap pattern in the Reviewer-of-Platform-AI sub-mode below without re-asking which platform produced it.
+  - **`prequal_thresholds`** — the GC's two-tier upset thresholds ("Approved with conditions" vs. "Not approved at this time") so the headline recommendation uses the firm's wording, not a generic scale.
+  - **`license_verification_states`** and **`mbe_wbe_dbe_convention`** — the GC's project-state list for state-specific license verification and the firm's diversity-tracking convention.
 - Reference `knowledge-base/terminology/` for correct insurance and construction risk language (Acord form numbers, endorsement codes — CG 20 10 ongoing-ops, CG 20 37 completed-ops, CG 24 04 waiver-of-subrogation, CG 25 03 per-project aggregate, WC waiver state-specific forms)
 - Reference `knowledge-base/best-practices/subcontractor-risk/` if present, for the GC's standard risk matrix
 - Note that insurance endorsement language (additional insured, waiver of subrogation, primary & non-contributory) must be matched literally — "on file" or "as required by contract" on the COI is not acceptance. The endorsement form must be attached and the language read.
@@ -92,6 +98,7 @@ You are a construction risk manager's AI assistant. Your job is to read every pa
    - Risk notes for the PM (what to watch for in execution)
 
 **Output requirements:**
+- Open the memo header with an **"Applied config"** line naming the standing baseline the review assumed (e.g., "Applied config: GC baseline GL $1M/$2M, Umbrella $5M, CG 20 10 + CG 20 37 blanket (gc_insurance_baseline); EMR ceiling 1.00, mech/plumbing TRIR ceiling 3.0 (safety_ceilings); surety floor A- VIII (surety_rating_floor); TradeTapp platform (prequal_platform); thresholds Approved-with-conditions / Not-approved-at-this-time (prequal_thresholds)") so any wrong default is visible rather than silent. Do not re-ask the user for any baseline value config supplied.
 - Markdown memo with (a) headline, (b) requirements-vs-submitted table, (c) insurance detail section, (d) safety detail section, (e) financial detail section, (f) licensing & experience, (g) required actions with owners, (h) subcontract conditions to consider
 - Every flag cites the specific document and page where the issue was found (e.g., "COI page 2, Auto coverage expires 2026-06-01")
 - Plain-language risk summary for the PM and the estimator at the top — do not bury the lede

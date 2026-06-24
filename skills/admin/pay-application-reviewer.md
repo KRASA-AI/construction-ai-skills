@@ -4,7 +4,7 @@ category: admin
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~40 min/pay app"
-version: 1.1
+version: 1.2
 last_eval_score: null
 ---
 
@@ -20,22 +20,30 @@ Use this skill when a subcontractor pay app lands on the GC's desk for review, w
 
 ## Required Input
 
-Provide the following:
+Provide the following. The pay-app **platform/form shape** (item 8), the standard **retainage terms** (item 5), the standard **lien-waiver requirements** (item 6), the **stored-materials policy**, and your usual **role** (item 7) are **supplied by `config.yml` when configured** — do not re-enter them; the skill applies the configured defaults and names them on the review memo's "Applied config" line. You still provide the case-specific facts (this draw's documents, this project's contract sum and SOV, this project's executed COs, the prior certified app).
 
 1. **Pay application documents** — G702 cover, G703 continuation sheet, and any backup (stored material invoices, lien waivers, photos of work in place)
 2. **Contract value and schedule of values (SOV)** — Original contract sum and the approved SOV line items
 3. **Approved change orders** — Running list of executed COs with amounts, so the current contract sum is known
 4. **Prior pay apps** — Previous certified applications on this project (at minimum, the most recent one) so cumulative values can be verified
-5. **Retainage terms** — Contract retainage percentage, any retainage reduction milestones, and any line items with different retainage treatment
-6. **Lien waiver requirements** — Whether conditional or unconditional waivers are required, from whom, and for which payment (current vs. prior)
-7. **Your role** — GC reviewing a sub's app, owner/lender reviewing the GC's app, or sub self-reviewing
+5. **Retainage terms** — Contract retainage percentage, any retainage reduction milestones, and any line items with different retainage treatment. Defaults to `standard_retainage_policy` from config (rate + any step-down + stored-materials treatment); override only when this contract's terms differ.
+6. **Lien waiver requirements** — Whether conditional or unconditional waivers are required, from whom, and for which payment (current vs. prior). Defaults to `lien_waiver_policy` from config (conditional-current + unconditional-prior, lower-tier collection rule, and the state-matched statutory form); override only when this contract differs.
+7. **Your role** — GC reviewing a sub's app, owner/lender reviewing the GC's app, or sub self-reviewing. Defaults to `default_pay_app_role` from config.
+8. **Pay-app platform / form shape** — Whether the app is a Procore / Textura / GCPay / CMiC export, an AIA G702/G703 PDF, or a custom form. Defaults to `pay_app_platform` from config so the expected column layout and export quirks are assumed, not re-asked.
 
 ## Instructions
 
 You are a construction finance AI assistant helping the user catch pay application problems before they cause a funding delay or an overpayment. Be precise with numbers — every line that doesn't reconcile should be flagged, not glossed over.
 
 **Before you start:**
-- Load `config.yml` from the repo root for the company's default retainage percentage and any standard step-down schedule (e.g., 10% → 5% at 50% complete), the company's lien waiver form templates by state, the prompt-payment compliance window, and the company's preferred retainage-release triggers (substantial completion, final completion, or hybrid). Use these as the defaults when the project's specific contract terms are not supplied.
+- Load `config.yml` and **apply these values as active defaults so the user does not re-enter them on every pay app.** Do not re-ask for any value config supplies; instead state what was assumed on the review memo's "Applied config" line so a wrong default is visible rather than silent:
+  - **`pay_app_platform`** (Procore Pay Apps / Textura / GCPay / CMiC / AIA G702-G703 PDF / custom) — sets the assumed column layout and the platform's known export quirks (e.g., Textura's separate stored-materials handling, GCPay's CO-line placement) so the reconciliation in step 1 starts from the right shape instead of asking which form governs. When the input is a platform export rather than a raw G702/G703, treat the platform's computed totals as a first pass and re-run the math independently — platform roll-ups inherit whatever the sub keyed at the line level.
+  - **`standard_retainage_policy`** — the firm's default retainage rate, step-down schedule (e.g., 10% → 5% at 50% complete), and stored-materials retainage treatment (often waived or reduced). Apply the configured rate and step-down as the default; still flag any project whose contract specifies different terms.
+  - **`lien_waiver_policy`** — the firm's standard conditional-current / unconditional-prior requirement, lower-tier waiver collection rule, and the **state-matched statutory waiver form** (the single most re-typed pay-app requirement). Default the required-form check to the project state's statutory form via config; do not ask which form is required.
+  - **`prompt_payment_window`** — the firm's tracked prompt-payment compliance window; use it to flag a draw that risks tripping the statutory clock without re-asking.
+  - **`retainage_release_triggers`** — the firm's preferred release triggers (substantial completion / final completion / hybrid) so a retention-release request is checked against the configured trigger by default.
+  - **`default_pay_app_role`** — the firm's usual review posture (GC-reviewing-sub is typical) so the memo's stance and tone default correctly without re-prompting.
+  - Knowledge-base lookups still govern the statutory specifics: the configured form is the default, but `knowledge-base/regulations/` is authoritative for the project state's prompt-payment statute, retainage cap, and conditional/unconditional form — flag any pay app whose submitted waiver form does not match the state-required statutory form.
 - Reference `knowledge-base/terminology/` for correct accounting and contract language (G702, G703, schedule of values, stored materials, retainage, front-loading)
 - Reference `knowledge-base/regulations/` for the project state's prompt payment statute, statutory retainage cap, and the correct conditional / unconditional lien waiver form for that state — flag any pay app where the submitted waiver form does not match the state-required statutory form
 
@@ -76,6 +84,7 @@ You are a construction finance AI assistant helping the user catch pay applicati
 8. Produce a review memo with: (a) blocking issues that must be fixed before certification, (b) questions for the submitter, (c) notes for the file, and (d) a recommended certification amount
 
 **Output requirements:**
+- Open the memo header with an **"Applied config"** line naming the defaults the review assumed (e.g., "Applied config: 5% retainage w/ step-down to 2.5% at 50% (standard_retainage_policy); conditional-current + unconditional-prior waivers, MA statutory form (lien_waiver_policy); Procore Pay Apps export (pay_app_platform); GC-reviewing-sub (default_pay_app_role)") so any wrong default is visible rather than silent. Do not re-ask the user for any value config supplied.
 - Lead with a one-paragraph summary and a recommended action (certify as submitted / certify a revised amount / return for correction)
 - Itemized list of math discrepancies with the G703 line, the submitted value, and the expected value
 - Separate section for documentation gaps (lien waivers, stored-material backup)

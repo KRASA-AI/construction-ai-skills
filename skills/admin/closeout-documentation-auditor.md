@@ -4,7 +4,7 @@ category: admin
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~6-10 hrs/project closeout"
-version: 1.1
+version: 1.2
 last_eval_score: null
 ---
 
@@ -20,26 +20,31 @@ Use this skill at substantial completion, during the closeout push to final comp
 
 ## Required Input
 
-Provide the following:
+Provide the following. The firm's **binder/tab structure**, **document-naming convention**, **delivery-format preference** (PDF-only vs. native DWG/RVT/BIM LOD), **CMMS upload template**, **warranty-start-date convention**, and your usual **role** (item 8) are **supplied by `config.yml` when configured** — do not re-enter them; the skill applies the configured defaults and names them on the audit's "Applied config" line. You still provide the project-specific facts (the spec sections, the submitted package, the SC date, the owner's project-specific uplift, the Cx and AHJ status).
 
 1. **Contract closeout spec sections** — Division 01 77 00 (Closeout Procedures), 01 78 00 (Closeout Submittals), and any trade-specific closeout spec sections (e.g., 23 08 00 for MEP commissioning)
 2. **Contract and executed change orders** — To establish the final scope of work and any added deliverables
 3. **Submitted closeout package** — The files or document index the GC or sub is submitting (as-builts, O&Ms, warranties, etc.)
 4. **Substantial completion date** — Target or certified date (warranties typically start here)
-5. **Owner's standards or facility requirements** — Any owner-specific closeout format (binder tabs, naming conventions, CMMS upload, BIM level-of-development for as-builts)
+5. **Owner's standards or facility requirements** — Any owner-specific closeout format (binder tabs, naming conventions, CMMS upload, BIM level-of-development for as-builts). The firm's *house* standard (default binder/tab structure, naming convention, delivery format, CMMS template) defaults from config — supply only the *project-specific* owner uplift that differs from the house standard.
 6. **Commissioning status** — Whether the project had a third-party Cx agent, and what's required from the GC (functional performance tests, Cx final report signoff)
 7. **Regulatory requirements** — AHJ final inspection status, certificate of occupancy status, fire marshal signoff, LEED/ESB documentation obligations
-8. **Your role** — GC assembling, owner/lender reviewing, or CM-as-advisor auditing
+8. **Your role** — GC assembling, owner/lender reviewing, or CM-as-advisor auditing. Defaults to `default_closeout_role` from config.
 
 ## Instructions
 
 You are a construction closeout specialist helping the user surface every missing or incorrect document before final payment is certified. Closeout errors are measured in weeks of delayed retainage and months of warranty dispute — be specific, be demanding, and don't accept "we'll get it" without a document name and a due date.
 
 **Before you start:**
-- Load `config.yml` from the repo root for the company's standard closeout binder tab structure and document-naming convention, digital delivery format preferences (PDF-only vs. native DWG/RVT/BIM LOD), CMMS upload template (if any), and the company's standard warranty start-date convention (substantial completion vs. final payment vs. beneficial occupancy) — apply this convention as the default for any item the spec does not explicitly date
+- Load `config.yml` and **apply these values as active defaults so the user does not re-enter them on every closeout.** Do not re-ask for any value config supplies; instead state what was assumed on the audit's "Applied config" line so a wrong default is visible rather than silent:
+  - **`closeout_binder_structure`** and **`document_naming_convention`** — the firm's house tab structure and file-naming standard; build the deliverables table and the "Received with issues" naming flags against these by default rather than asking how the package should be organized.
+  - **`closeout_delivery_format`** — the firm's standard delivery format (PDF-only vs. native DWG/RVT + BIM LOD); apply it as the default format-required value on each as-built / model deliverable, and flag PDF-only submissions where the house standard (or owner uplift) requires native files.
+  - **`cmms_upload_template`** — the firm's standard CMMS/asset-register template (e.g., Maximo, FM:Systems, none); when set, default the O&M serial-number / asset-data reconciliation to that template's required fields without re-asking.
+  - **`warranty_start_convention`** — the firm's standard warranty-start basis (substantial completion vs. final payment vs. beneficial occupancy); apply as the default start date for any warranty the spec does not explicitly date, and use it as the reference when flagging backdated warranty start dates.
+  - **`default_closeout_role`** — the firm's usual audit posture (GC-assembling / owner-reviewing / CM-as-advisor) so the memo's stance defaults correctly.
+  - The configured convention is the *default* only; a project-specific owner requirement or a spec section that explicitly dates an item always governs over the config default, and `knowledge-base/regulations/` remains authoritative for state warranty-duration minimums (the longer of spec vs. statute governs).
 - Reference `knowledge-base/terminology/` for CSI division names, warranty types (manufacturer, installer, extended, and labor-and-materials vs. parts-only), and commissioning document names (Cx final report, TAB report, FPT, O&M)
 - Reference `knowledge-base/regulations/` for the project state's AHJ final inspection prerequisites, certificate of occupancy requirements, and any state-specific warranty duration minimums — some states mandate minimums that exceed spec language, and the longer of the two governs
-- Note that warranty start dates, attic-stock quantities, and extended warranty triggers vary by trade and spec section; the config.yml convention is the default for any item the spec does not explicitly address
 
 **Process:**
 
@@ -84,6 +89,7 @@ You are a construction closeout specialist helping the user surface every missin
    - Recommended final payment / retainage release amount, or "hold until items X, Y are resolved"
 
 **Output requirements:**
+- Open the report header with an **"Applied config"** line naming the defaults the audit assumed (e.g., "Applied config: house 12-tab binder structure + [Div]-[SpecNo]-[DocType] naming (closeout_binder_structure / document_naming_convention); native DWG+RVT delivery (closeout_delivery_format); Maximo asset template (cmms_upload_template); warranty start = certified SC (warranty_start_convention); CM-as-advisor (default_closeout_role)") so any wrong default is visible rather than silent. Do not re-ask the user for any value config supplied.
 - Markdown report with (a) executive summary, (b) gap summary count (received / issues / missing / N/A), (c) full deliverables table, (d) blocker list, (e) action owners and due dates, (f) recommendation on final payment / retainage release
 - Plain-language — assume the reader is the owner's finance person, not a construction lawyer
 - Cite the spec section for every blocker
