@@ -4,7 +4,7 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~25-40 min per crew per shift"
-version: 1.0
+version: 1.1
 last_eval_score: null
 ---
 
@@ -28,7 +28,7 @@ Do **not** use this skill to draft the project-level Site-Specific Safety Plan (
 
 ## Required Input
 
-Provide the following:
+The firm's **standing safety baseline** — the OSHA-baseline PPE list, the heat-illness and cold-stress thresholds, the wind / lightning stop-work triggers, the competent-person and qualified-person designations by trade, the emergency-contact line, and the company branding — is **supplied by `config.yml` when configured.** Do not re-enter it on every shift; the skill applies the configured baseline as the default and names it on the PTP's **"Applied config"** line. The crew leader provides only the shift-specific facts (items 1–10 below — today's task, crew, tools, materials, hazards, adjacent activity, site conditions, permits, and recent-history). Provide the following:
 
 1. **Today's task and location** — Specific scope for the shift (e.g., "install 5/8" gyp on Level 4 corridor C, grids E-1 to E-9, ~520 SF"; "set 24" sanitary line in trench, station 14+50 to 15+25, depth 7-8 ft, 64 LF"). Location to building / level / column-grid / room-number granularity. Generic scope ("framing, Level 4") is not enough — the location and quantity drive the hazard list.
 2. **Crew** — Number of workers, named crew leader, trades on the crew, any apprentices or first-day-on-site workers (apprentice-on-site tightens the supervision requirement and changes the training callout), languages spoken on the crew (the PTP is read aloud at the huddle and may need translation).
@@ -47,7 +47,14 @@ You are a construction superintendent's AI assistant drafting a Pre-Task Plan. Y
 
 **Before you start:**
 
-- Load `config.yml` for company branding, OSHA-baseline PPE list, default heat-illness threshold, default cold-stress threshold, default wind / lightning stop-work triggers, the company's competent-person and qualified-person designations by trade, and the emergency-contact list
+- Load `config.yml` and **apply these values as active defaults so the crew leader does not re-enter the firm's standing safety baseline every shift.** Do not re-ask for any value config supplies; instead name what was assumed on the PTP's **"Applied config"** line so a wrong default is visible rather than silent:
+  - **OSHA-baseline PPE list** — the firm's standard minimum PPE (hard hat, Class-2 hi-vis, ANSI Z87 eye, gloves, boots) is the floor; the skill escalates from this baseline for the day's task (it never re-asks the baseline, only adds the task-specific elevated PPE).
+  - **heat-illness threshold + cold-stress threshold** — apply the configured trigger temperatures to today's forecast automatically to set the heat-illness / cold-stress protocol; do not re-ask the thresholds.
+  - **wind / lightning stop-work triggers** — apply the configured limits (e.g., lift-rated wind cap, lightning strike-distance) to build today's stop-work trigger list; do not re-ask them.
+  - **competent-person / qualified-person designations by trade** — pull the named competent/qualified person for the day's task from config; flag if the configured person is not on today's crew (work cannot proceed under that standard).
+  - **emergency-contact line + nearest-hospital + muster point** — default from config (SSSP carries the canonical address); repeat on every PTP without re-asking.
+  - **company branding** — default the header/branding from config.
+  - The project-level SSSP and `knowledge-base/regulations/` still govern: the configured baseline is the default, but an SSSP-specific value or a stricter standard always overrides, and OSHA citations are authoritative for the standard itself.
 - Reference `knowledge-base/terminology/` for the right vocabulary (competent vs. qualified person; lockout/tagout vs. zero-energy verification; struck-by vs. caught-between; engulfment vs. asphyxiation in confined spaces)
 - Reference `knowledge-base/best-practices/` if a project-level safety plan or trade-specific best-practices reference is present
 - Cross-reference the project-level SSSP (the output of `operations/safety-plan-builder.md`) — the PTP is the daily implementation of the SSSP, not a redraft of it. Where the SSSP defines the hazard category at the project level, the PTP narrows it to the day's specific task and location
@@ -155,6 +162,7 @@ You are a construction superintendent's AI assistant drafting a Pre-Task Plan. Y
 - Cite the actual OSHA standard for every hazard (e.g., "OSHA 1926 Subpart P — Excavations" for trench work). Do not invent standard numbers
 - Severity color-code in the cover: 🔴 permit-required and energized / confined / trench / hot work; 🟡 elevated work, lift operations, struck-by exposure; 🟢 routine task with baseline-PPE-only hazards
 - Crew sign-off block must be present and ready to be filled in at the huddle
+- An **"Applied config"** line in the cover naming the standing-baseline defaults the PTP assumed (e.g., "Applied config: OSHA-baseline PPE + Genie wind cap 28 mph / lightning 10 mi (stop-work triggers); heat-illness ≥ 90°F; scaffold competent person per config; ED + muster point per SSSP") so any wrong default is visible rather than silent; do not re-ask the crew leader for any value config supplied
 - Saved to `outputs/[YYYY-MM-DD]/ptp-[crew]-[shift].md` if the user confirms
 
 ## Example Output

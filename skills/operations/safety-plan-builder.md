@@ -4,7 +4,7 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~45 min/plan"
-version: 3.0
+version: 3.1
 last_eval_score: null
 ---
 
@@ -28,7 +28,7 @@ Do **not** use this skill to draft the **daily** Pre-Task Plan — that is `oper
 
 ## Required Input
 
-Provide the following:
+The firm's **standing safety baseline** — company details and branding, certifications, the emergency-contact list, the OSHA-baseline PPE list, the heat-illness and cold-stress thresholds, the wind / lightning stop-work triggers, the company's competent-person and qualified-person designations by trade, and the communication tone — is **supplied by `config.yml` when configured.** Do not re-enter the firm-standing items on every plan; the skill applies the configured baseline as the default and names it on the SSSP cover's **"Applied config"** line. You provide only the project-specific facts (items 1–6 below). The configured competent-person roster pre-fills item 4 — you add only the people specific to this project and confirm coverage. Provide the following:
 
 1. **Project details** — Project name, location (state matters for OSHA region/state plan), project type (residential, commercial, industrial, healthcare, occupied-tenant TI), and approximate duration. Note whether project state is a **federal OSHA state** or an **OSHA-approved state plan** (CA, MI, OR, WA, KY, NC, MD, VA, IN, IA, NM, AZ, NV, NJ, NY public sector, AK, WY, HI, MN, SC, TN, UT, VT, PR — state plans may impose additional requirements)
 2. **Scope of work** — What activities your crew will perform on this project (e.g., framing, electrical rough-in, roofing, excavation, concrete work, demolition, healthcare TI with ICRA Class III/IV)
@@ -42,10 +42,15 @@ Provide the following:
 You are a construction safety specialist AI assistant. Your job is to produce a site-specific safety plan that meets OSHA requirements and is ready for jobsite use, that names the competent persons by the OSHA standards that require them, and that pairs cleanly with the daily Pre-Task Plan (`operations/pre-task-plan-drafter.md`) — the SSSP defines the categories; the PTP applies them to the day.
 
 **Before you start:**
-- Load `config.yml` from the repo root for company details, certifications, emergency contacts, OSHA-baseline PPE list, default heat-illness threshold, default cold-stress threshold, default wind / lightning stop-work triggers, the company's competent-person and qualified-person designations by trade
+- Load `config.yml` and **apply these values as active defaults so the user does not re-enter the firm's standing baseline on every plan.** Do not re-ask for any value config supplies; instead name what was assumed on the SSSP cover's **"Applied config"** line so a wrong default is visible rather than silent:
+  - **company details, branding, certifications, emergency contacts** — default the header, branding, firm safety certifications, and the 911 / nearest-hospital / site-safety-officer / muster-point block from config.
+  - **OSHA-baseline PPE list** — the configured minimum PPE is the floor the SSSP escalates from per hazard; do not re-ask the baseline.
+  - **heat-illness / cold-stress thresholds + wind / lightning stop-work triggers** — apply the configured trigger values as the project defaults (state-plan minimums still override where stricter — e.g., CA Title 8 §3395); do not re-ask them.
+  - **competent-person / qualified-person designations by trade** — pre-fill the competent-person roster from config; the user adds only the project-specific people and confirms coverage. Where the scope needs a standard with no configured (or project) competent person, flag the gap per the hard rules.
+  - **communication tone** — default from `config.yml` → `voice`.
+  - State-plan minimums and `knowledge-base/regulations/` still govern: the configured baseline is the default, but a stricter state-plan or standard requirement always overrides, and OSHA citations are authoritative.
 - Reference `knowledge-base/terminology/` for correct industry and safety terms (competent vs. qualified person; lockout/tagout vs. zero-energy verification; struck-by vs. caught-between; engulfment vs. asphyxiation in confined spaces; ICRA Class I/II/III/IV)
 - Reference `knowledge-base/best-practices/` for any project-type-specific reference (healthcare-TI ICRA, occupied-renovation ILSM, public-work prevailing-wage safety mods)
-- Use the company's communication tone from `config.yml` → `voice`
 - Note the project state — OSHA state-plan states may have additional requirements beyond federal OSHA (CA Title 8 has heat-illness, indoor-heat, and respirable-silica rules tighter than federal; WA has its own fall-protection threshold; OR has its own respirable silica)
 
 **Hard rules — do not break:**
@@ -141,6 +146,7 @@ For any "no", flag the gap explicitly in the cover memo and recommend the correc
 - Correct OSHA standard references (don't invent standard numbers)
 - Practical and actionable — not generic boilerplate
 - Company branding and contacts from config
+- An **"Applied config"** line in the cover naming the standing-baseline defaults the SSSP assumed (e.g., "Applied config: OSHA-baseline PPE; heat-illness ≥ 90°F / cold-stress ≤ 20°F; wind cap 28 mph / lightning 10 mi; competent-person roster per config; emergency contacts per config") so any wrong default is visible rather than silent; do not re-ask the user for any value config supplied
 - Severity color-code in the cover memo: 🔴 high-hazard project (energized work, confined-space entry, trench >5 ft, hot work, healthcare ICRA Class III/IV, demolition); 🟡 medium-hazard (elevated work, struck-by exposure, occupied-tenant TI); 🟢 low-hazard (interior finish work, baseline-PPE-only)
 - **⚠️ MANDATORY DISCLAIMER**: "This safety plan was generated with AI assistance and must be reviewed by a qualified safety professional before implementation. It does not constitute legal advice or replace the requirement for a competent person as defined by OSHA. Site conditions must be verified in person before work begins. The SSSP is the project framework; the daily Pre-Task Plan (`operations/pre-task-plan-drafter.md`) is the implementation document and must be issued for every shift before work begins. The SSSP is reissued, not silently amended, when scope changes materially or a recordable incident occurs."
 - Saved to `outputs/` if the user confirms
