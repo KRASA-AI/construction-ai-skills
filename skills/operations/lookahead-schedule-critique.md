@@ -5,7 +5,7 @@ tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~2-3 hrs/week on pull-plan prep"
 version: 1.1
-last_eval_score: null
+last_eval_score: 9.1
 ---
 
 # 📅 Look-Ahead Schedule Critique

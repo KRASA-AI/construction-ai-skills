@@ -5,7 +5,7 @@ tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~4-8 hrs/bulletin"
 version: 1.1
-last_eval_score: null
+last_eval_score: 9.1
 ---
 
 # 📐 Drawing Revision Comparator
