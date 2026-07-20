@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~30-45 min/submittal"
-version: 3.2
-last_eval_score: null
+version: 3.3
+last_eval_score: 9.2
 ---
 
 # 🔍 Submittal Review Summary
@@ -142,7 +142,9 @@ Markdown memo with this structure:
 
 When the input mode is a platform-AI submittal review (Trunk Tools TrunkSubmittal, Procore Datagrid submittal automation, Pelles AI, Newforma AI, Autodesk Construction Cloud submittal intelligence, or any other generative-AI submittal tool), the skill switches to redline-review mode. The platform output is treated as junior-reviewer first-pass work; this skill is the senior-reviewer check before the stamp is issued and the submittal is routed back to the sub.
 
-Run the platform output through this six-point checklist and produce a redlined version (kept lines, struck lines, inserted lines, and a one-paragraph review summary):
+**Why the platform first pass is least reliable on this specific workflow — measured, not asserted.** Independent 2026 benchmarking of AI agents on real construction document sets (drawings, specifications, and submittal packages scored against reviewer-placed ground truth) found submittal compliance review to be the **single hardest and lowest-scoring task family** — well below single-sheet or even cross-sheet drawing tasks, with out-of-the-box general-purpose agents scoring only a small fraction of a competent human's catch rate. The reason is structural, not a temporary model weakness: submittal compliance is a **scattered-evidence problem**. To judge one submitted product you must reconcile a requirement in the spec against a value on the submittal, against details on *several* drawing sheets, against related submittals — and an agent that cannot assemble evidence spread across dozens of pages and multiple documents cannot reason about it, so it silently reports "no conflict found" when it simply never gathered the conflicting pieces. **Treat this as the load-bearing consequence: the cross-document completeness checks below (items 1, 4, and 7) are the highest-value part of this review, not a formality — an absent finding here is far more likely to mean "not checked" than "clean."**
+
+Run the platform output through this seven-point checklist and produce a redlined version (kept lines, struck lines, inserted lines, and a one-paragraph review summary):
 
 1. **Compliance matrix completeness.** Did the platform identify *every* specified requirement the submittal must address, or only the obvious ones? Platforms commonly miss performance requirements buried in later spec paragraphs (e.g., "paragraph 3.4 — field testing"), warranty duration requirements, and LEED/sustainability documentation requirements listed in Division 01. Cross-check the platform's compliance matrix against the full spec section before accepting it.
 2. **Deviation classification accuracy.** Did the platform correctly classify each deviation as minor, substantive, or substitution-request? Platforms commonly under-classify substitutions as "minor deviations" when the sub offered a different manufacturer without a formal substitution form. Re-classify per the taxonomy in this skill's main instructions.
@@ -150,6 +152,7 @@ Run the platform output through this six-point checklist and produce a redlined 
 4. **Coordination impact coverage.** Did the platform identify all dependent submittals (what this submittal relies on and what it drives)? Platforms with access to only the current submittal often miss the dependency chain. Cross-check against the submittal log.
 5. **Disposition rationale.** Did the platform recommend a disposition with a specific rationale citing the spec section and paragraph for each deviation? Platforms commonly recommend "Revise & Resubmit" without naming the specific paragraph that requires it. Add citations.
 6. **Administrative completeness check.** Did the platform confirm the contractor's stamp is present, the submittal number matches the log, and all required attachments per the spec's "Action Submittals" paragraph are present? Platforms with limited document access often skip the administrative check.
+7. **Flat-text extraction blind spot.** Did the platform actually *read the drawings graphically*, or did it flatten them to text? Many AI pipelines — especially general-purpose coding-assistant setups and low-assurance in-house tools — ingest a drawing sheet by pulling its extractable text and discarding everything that lives only in the graphics: dimensions inside a detail, callout leaders and their targets, hatching and fill that denote a material, revision clouds and deltas, and anything drawn rather than typed. A submittal check run on flattened text will miss any requirement or conflict that is *shown, not written*. Test for it: does the platform output contain at least one finding that could **only** have come from reading the drawing as a drawing (a dimensional mismatch, a detail-to-submittal geometry conflict, a clouded revision)? If it contains none, assume the drawings were read as flat text and mark every **visual/graphical** requirement (dimensional tolerances, detail geometry, finish shown by hatch, keyed callouts) as `UNVERIFIED — verify by eye against the sheet` rather than accepting the platform's silence as compliance.
 
 **Output structure for Reviewer-of-Platform-AI-Output mode:**
 
@@ -170,6 +173,7 @@ Review Findings:
 4. Coordination impacts: [Pass / Added: depends on submittal 09 22 16-002 (pending)]
 5. Disposition rationale: [Pass / Added spec cite for each deviation]
 6. Administrative check: [Pass / Flag: contractor's stamp not confirmed by platform]
+7. Flat-text extraction blind spot: [Pass — output shows graphical reading / Flag: no drawing-only findings present; marked N visual requirements UNVERIFIED for by-eye check]
 
 Recommended Disposition: [Stamp — confirmed or revised from platform's recommendation]
 
