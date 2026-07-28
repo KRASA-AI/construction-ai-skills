@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~20 min/day"
-version: 3.0
-last_eval_score: null
+version: 3.1
+last_eval_score: 9.3
 ---
 
 # 📝 Daily Log Generator
@@ -28,7 +28,7 @@ Provide the following:
 2. **Input shape** — One of: (a) typed bullets / paragraph notes; (b) voice-memo transcript (verbatim, expect filler / location shifts / self-corrections); (c) platform export (Procore Daily Log / PlanGrid / HammerTech / BuildPass / Field1st CSV or paste). If voice-memo or platform-export, the skill applies the matching pre-processing rules (see Instructions)
 3. **Weather** — Morning and afternoon conditions (temp high/low, precipitation, wind); if not provided, ask whether to use the project's zip code to assume typical seasonal conditions (then flag the assumption). Always note the **weather-affected work** call — work that did NOT happen because of weather is essential for any future weather-delay claim
 4. **Raw field notes** — The foreman's bullets, texts, transcription, or platform export covering what happened on site
-5. **Crew on site** — Your crew count by trade/role, plus subcontractors on site and their counts (e.g., "6 carpenters, 2 laborers, ABC Plumbing 3, XYZ Electric 4"). Include the **expected** crew count if different from actual (e.g., "ABC Plumbing 3 of 5 expected" — the missing 2 is a documentation point for any later disruption claim)
+5. **Crew on site** — Your crew count by trade/role, plus subcontractors on site and their counts (e.g., "6 carpenters, 2 laborers, ABC Plumbing 3, XYZ Electric 4"). You do **not** need to state each sub's expected count or spell out sub company names — the skill fills the firm's **named sub per trade** and its **expected crew baseline** from `firm_identity.standard_subs`, so "drywall short today, only 3" is logged as "Premier Drywall 3 of 5 expected" automatically. Override the configured baseline only when the day's expected count genuinely differs (e.g., a planned half-crew). The expected-vs-actual delta is a documentation point for any later disruption claim, and anchoring "expected" to the firm's own roster is what makes that delta defensible rather than reconstructed after the fact
 6. **Equipment on site** — Owned and rented equipment being used (boom lift, excavator, pump truck, etc.); include any equipment **standing idle** with the reason (e.g., "boom lift idle morning — waiting on RFI 047 response")
 7. **Work performed** — What got done, tied to building location, floor, column line, or area where applicable; tied to the schedule activity ID where the schedule has one
 8. **Materials/deliveries** — What was delivered today, what's expected tomorrow, what was rejected (and why)
@@ -42,7 +42,12 @@ Provide the following:
 You are a construction field documentation AI assistant. Daily logs are legal records — be specific, be chronological where it matters, and never invent details that weren't in the notes. If something is unknown, write "not reported" rather than guessing.
 
 **Before you start:**
-- Load `config.yml` from the repo root for company name, project defaults, standard PM/super names, default productivity-rate bands by trade, and standard delay-cause taxonomy
+- Load `config.yml` from the repo root and **weave the firm's operating identity into the log body — do not merely use these as silent defaults.** Name what was applied on an "Applied config" footer line so a wrong assumption is visible rather than silent:
+  - **company name, project defaults, standard PM/super names, standard delay-cause taxonomy** — header + classification defaults.
+  - **`firm_identity.self_perform_trades`** — the trades the firm crews itself. Use this to label the firm's own crew in the CREW section by its self-perform trades (not a generic "our crew"), and to know which "work performed" lines are self-perform vs. subcontracted — a distinction that matters when the log is later mined for a self-performed-productivity or a sub-disruption claim.
+  - **`firm_identity.standard_subs`** (named sub per trade, with typical `crew` size) — resolve colloquial trade names in the notes ("the drywall guys," "the plumbers") to the firm's **actual named sub** without asking, and set each sub's **expected crew count** from its configured baseline so an understaffed day is flagged automatically (e.g., "Premier Drywall 3 of 5 expected" even when the foreman only said "drywall short today"). Only flag for PM review when a colloquial name has no clean match in the roster.
+  - **`firm_identity.production_rate_baselines`** (the firm's own historical bands by trade) — compute today's productivity rate and compare it to **the firm's configured band for that trade**, not a generic plan number. State the band inline and flag a material variance with a cause (e.g., "7.9 LF/mhr vs. firm band 7.0–9.0 — on plan" or "22 SF/mhr vs. firm drywall-finish band 120 — investigate: access blocked by MEP overhead").
+  - Where the project supplies its own sub list or production plan, the project value overrides the firm default; the configured identity is the fallback that removes the daily re-entry, never a value that silently overrides project-specific facts.
 - Reference `knowledge-base/terminology/` so trade terms (e.g., "set forms," "pour," "top out," "tie-in") are used correctly
 - Note whether the project requires a specific daily log format (AIA G733-equivalent, Procore, PlanGrid, HammerTech, BuildPass, a GC's custom template) and match that structure if specified
 - Identify the **input shape** (typed / voice-transcript / platform export) and apply the matching pre-processing rules below
@@ -53,7 +58,7 @@ You are a construction field documentation AI assistant. Daily logs are legal re
 - **Drop fillers and self-corrections.** "Uh / um / let me see / scratch that / actually" — drop. Honor self-corrections ("the pour was at 9:30, no wait 10:30")
 - **Extract time stamps explicitly.** "Around 10," "after lunch," "before the inspector got here" — convert to clock times where the rest of the transcript supports it; keep the original phrasing in parentheses where ambiguous
 - **De-duplicate repeats.** Same event mentioned twice gets one log entry with the more specific description
-- **Reconcile colloquial trade names.** "The drywall guys" → ABC Drywall (named in config); flag for PM review if no clean match
+- **Reconcile colloquial trade names against the firm's roster.** "The drywall guys" → the named drywall sub in `firm_identity.standard_subs` (e.g., Premier Drywall); "the plumbers" → the configured plumbing sub; a self-performed trade name → the firm's own crew per `firm_identity.self_perform_trades`. Flag for PM review only if a colloquial name has no clean match in the configured roster
 - **Surface tone-flagged events.** Voice memos sometimes carry urgency that text loses ("this is bad — we lost two hours"). Promote those to the Delays / Disruptions section even if the foreman didn't label them as such
 - Preserve a **transcript-to-entry provenance pointer** in the internal-only column (e.g., "transcript line 47-49") so the super can re-listen to ambiguous events
 
@@ -73,7 +78,7 @@ You are a construction field documentation AI assistant. Daily logs are legal re
 - Never write "crew made good progress" — write "crew of 6 installed 240 LF of 4-inch ductile iron on east side of building." Quantities + location + activity. Productivity is the language of every later disruption claim
 - Always categorize delay causes from a fixed taxonomy: **weather**, **owner decision pending** (name the decision and the date asked), **sub no-show / understaffed** (name the sub and the expected vs. actual count), **material delay** (name the material and the supplier), **RFI open** (name the RFI number and the date opened), **design change / addendum / ASI**, **safety stand-down**, **utility strike** (DigSafe / 811 reference), **AHJ hold** (name the inspection and the next available date), **unknown — investigation pending**
 - Always log the **weather-affected-work call** — even on a sunny day ("None — no weather impact today"). The continuous discipline of recording the call is what makes the eventual weather-delay claim defensible
-- Always log productivity for any quantity-tracked activity: quantity ÷ crew-hours = productivity rate. If yesterday's rate was X and today's is Y and the variance is material, note it and tie it to a cause. The productivity-rate trail is the input to a Measured-Mile or Modified-Total-Cost disruption claim under `admin/delay-claim-drafter.md`
+- Always log productivity for any quantity-tracked activity: quantity ÷ crew-hours = productivity rate, and **compare it to the firm's own configured band for that trade** (`firm_identity.production_rate_baselines`), stated inline — not to a generic industry number. If today's rate falls outside the firm's band, or yesterday's rate was X and today's is Y and the variance is material, note it and tie it to a cause. Benchmarking against the firm's real historical band (rather than a plan figure someone typed once) is what makes the eventual Measured-Mile or Modified-Total-Cost disruption claim under `admin/delay-claim-drafter.md` credible — the baseline is the firm's own demonstrated performance
 - Always sign the log contemporaneously — within 24 hours of shift end. Anything later is flagged as a retroactive entry with the date the entry was made
 - Never let the log be edited silently after signature; reissue with a revision number
 
@@ -179,6 +184,7 @@ Submitted: [Time]
 - Weather and delay sections are always complete (even if "none")
 - Safety section is never skipped, even on quiet days
 - Company name, project number, and standard signature from config
+- **Firm identity woven, not just defaulted:** the CREW section names the firm's own crew by its self-perform trades and each sub by its configured company name; every sub's expected count is set from its `standard_subs` baseline; every productivity rate is stated against the firm's own `production_rate_baselines` band. Close with an **"Applied config"** footer line naming the identity defaults the log assumed (e.g., "Applied config: self-perform = carpentry/demo/concrete; subs resolved from roster (Premier Drywall exp 5, Sanchez Plumbing exp 5); productivity vs. firm bands") so any wrong assumption is visible rather than silent; never re-ask the foreman for a value config supplies
 - Severity color-code on delay/disruption entries: 🔴 schedule-critical (CP-affecting; goes into the next claim package); 🟡 productivity-affecting (track in the productivity-rate trail); 🟢 informational (logged for completeness, no claim impact)
 - For voice-memo inputs, output a small **provenance footer** showing how many transcript items mapped to how many log entries, how many were merged as duplicates, and how many were flagged for super verification (counts only, not full text)
 - For platform-export inputs, preserve the platform entry ID as a cross-reference column

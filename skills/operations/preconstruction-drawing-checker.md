@@ -5,7 +5,7 @@ tools: [claude, chatgpt]
 difficulty: advanced
 time_saved: "~6-16 hrs/drawing set"
 version: 1.1
-last_eval_score: null
+last_eval_score: 9.2
 ---
 
 # 🔍 Preconstruction Drawing Checker

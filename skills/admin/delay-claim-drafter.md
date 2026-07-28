@@ -4,8 +4,8 @@ category: admin
 tools: [claude, chatgpt]
 difficulty: advanced
 time_saved: "~4-8 hrs/claim"
-version: 1.1
-last_eval_score: null
+version: 1.2
+last_eval_score: 9.3
 ---
 
 # ⏱️ Delay Claim & Time Extension Drafter
@@ -32,6 +32,33 @@ Provide the following:
 8. **Stage of the process** — Initial notice of delay / request for EOT / formal delay claim / response to a contract administrator's denial. Each stage uses a different tone and level of detail.
 9. **Concurrent delay exposure** — Is the contractor also behind for reasons unrelated to the event? If so, list them — they must be addressed, not hidden.
 10. **Audience and posture** — Owner's rep / contract administrator / design professional / dispute-review board. The claim's tone and defensiveness level should match.
+
+### Minimum Viable Input — the notice clock does not wait for the schedule analysis
+
+The ten inputs above are what a *formal claim* needs. They are **not** what a *notice* needs — and demanding all ten before producing anything is how contractors blow the notice window while assembling exhibits. Most delay claims are lost on notice compliance, not on the merits. **Match the required input to the stage (input #8), and always offer the notice first.**
+
+**Stage 1 — Notice of delay. Three inputs. Draft it today.**
+
+- The **notice clause** (days-to-notice, recipients, required means — certified mail / portal / email)
+- The **delay event**: what happened, when, first-awareness date and the document that fixes it
+- The **addressee**
+
+That is enough for a compliant, rights-preserving notice. Notice does not quantify, does not require the schedule, does not require the analysis method, and does not require the quantum. If the user arrives with a delay event and nothing else, **do not ask for the other seven inputs — draft the notice, then list what is needed for the EOT request that follows.** If the contract form is unknown, draft to the most protective common denominator (written notice to the owner's rep and the A/E, within 7 days of first awareness, with reservation of rights) and state plainly at the top of the draft: "Contract form not supplied — this notice is drafted to a conservative 7-day standard. Confirm the actual notice clause before sending; if the contract allows longer, no harm; if it requires a different recipient or means of delivery, correct before sending."
+
+**Stage 2 — Request for EOT. Adds:** schedule data (#5), analysis method (#6), causation-supporting documentation (#4).
+
+**Stage 3 — Formal claim / response to denial. Requires all ten**, plus the counsel-review threshold from `config.yml`.
+
+**Degradation rules within a stage — never fabricate, always flag:**
+
+| Missing input | Degraded behavior |
+|---|---|
+| **Contract form / clauses (#1)** | Draft to the conservative common denominator as above; carry an explicit "confirm the notice clause before sending" banner. Never state a specific clause number that was not supplied. |
+| **Schedule data (#5)** | Do not fabricate a fragnet or a float value. Draft the entitlement narrative and causation on the facts, mark the impact section **"Schedule impact to be quantified — analysis pending"**, and state the number of days as *claimed pending analysis*, not as an analyzed result. A notice may claim an unquantified impact; an EOT request may not. |
+| **Contemporaneous documentation (#4)** | Draft the narrative from the facts supplied, but every unsupported assertion carries `[EVIDENCE NEEDED: — ]` inline, and the Missing-Evidence list at the end names the specific document that would close it (e.g., "daily log for 2026-05-04 showing the crew idled"). Never cite a document you have not been shown. |
+| **Concurrent-delay exposure (#9)** | Never assume it is zero. If not supplied, ask the single question — it is the one input worth one round-trip, because a claim that hides concurrency and is later shown to have known of it costs the contractor credibility for the rest of the job. Frame it once, plainly, and proceed on the answer. |
+
+**Always open with the stage recommendation.** If the notice window is open and no notice has gone out, say so before drafting anything else: the notice is the highest-value document on the table, regardless of what the user asked for.
 
 ## Instructions
 
@@ -84,6 +111,8 @@ You are an AI assistant drafting a delay claim on behalf of a contractor's contr
 
 **Output requirements:**
 - Clear header (Notice of Delay / Request for EOT / Formal Claim / Response to Denial), addressee, date, project name, contract reference
+- Stage recommendation first, before the draft — and if the notice window is open with no notice issued, the notice is drafted first regardless of what was asked for
+- Any input not supplied is surfaced, never silently assumed: `[EVIDENCE NEEDED: — ]` inline for unsupported assertions, "analysis pending" for unquantified schedule impact, and a confirm-before-sending banner when the contract clause was not supplied
 - Numbered paragraphs, construction-contract-writing register (precise, no hyperbole, no legal conclusions the contractor is not entitled to draw)
 - Every factual assertion tied to a contemporaneous document ("see Daily Log dated MM/DD/YYYY", "see RFI-0123 dated MM/DD/YYYY")
 - Schedule-analysis method named and its limitations acknowledged

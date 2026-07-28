@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~4-8 hrs/bulletin"
-version: 1.1
-last_eval_score: 9.1
+version: 1.2
+last_eval_score: 9.2
 ---
 
 # 📐 Drawing Revision Comparator
@@ -33,6 +33,28 @@ Provide the following:
 7. **Current schedule snapshot** — Particularly: which activities are inside the 3-week look-ahead, which are on the critical path, and which have been released for fabrication. The comparator will triage bulletin impact against the live schedule
 8. **Change-order log** (optional) — If a CO log is maintained, include it so the comparator can flag revisions that widen or narrow an already-pending CO
 
+### Minimum Viable Input — run on what you have; do not block on a missing log
+
+A bulletin lands with a clock on it. The PE who has the bulletin in hand but has to go chase the submittal log from the PM and the schedule from the scheduler will not run this skill at all — they will eyeball the clouds and move on, which is the exact failure this skill exists to prevent. So: **produce the delta package with whatever is supplied, and mark the gaps explicitly. Never delay the delta for a missing log, and never fabricate a log entry to fill a hole.**
+
+**Blocking inputs (4) — genuinely cannot proceed without these.** Ask for them, and only these, if they are missing:
+
+- Bulletin metadata (#1) — a delta with no bulletin number is not routable
+- Prior issue identification (#2) — see Hard Rule 2; a delta against an unnamed baseline is worthless and unsafe. This is the one item worth a full stop.
+- Bulletin contents (#3) — the sheets, files, or a per-sheet description of the changes
+- Project scope / trade structure (#4) — without it there is no trade routing table, which is the whole point of the deliverable
+
+**Degradable inputs (4) — run without them, in degraded mode:**
+
+| Missing input | Degraded behavior — do exactly this |
+|---|---|
+| **Submittal log (#5)** | Still emit the Submittal Impact Matrix, populated from the changes rather than the log: one row per change that *touches submittable scope* (a detail, dimension, material call-out, or equipment schedule), with `Submittal #` = `PENDING — submittal log not supplied` and `Action` = "Confirm against submittal log before release; if a submittal exists for this scope and is approved or in fabrication, a stop-fabrication notice is required." Never write "Unaffected" for a submittal you have not seen. |
+| **RFI log (#6)** | Still emit the RFI Impact Matrix, populated from the changes: one row per change that reads as an answer to a question or that opens a new ambiguity, with `RFI #` = `PENDING — RFI log not supplied`. Draft the new-RFI candidates in full (they do not need the log). Do not claim any RFI is closed without its number. |
+| **Schedule snapshot (#7)** | Severity cannot be scored. Use ⚪ **UNSCORED — schedule not supplied** in place of 🔴/🟡/🟢 on every change, and add one line under the header: "Severity is unscored. Sort by Class instead: every Scope addition / substitution / superseded-submittal item must be severity-rated against the look-ahead before distribution." Do not guess a severity from the nature of the change — a guessed 🟢 on a critical-path item is a worse outcome than a blank. |
+| **CO log (#8)** | Already optional. Emit CO candidates as "new CO candidate" with no cross-reference, and note that widened/narrowed pending COs cannot be detected. |
+
+**Whenever any degradable input is absent, the output MUST carry an `Inputs Not Supplied` block directly under the header** listing (a) each missing input, (b) the specific section of the report that is therefore incomplete, and (c) the one-line re-run instruction ("Paste the submittal log and re-run — the Submittal Impact Matrix will resolve"). The delta is releasable to the trades in degraded mode; the ⚪ and PENDING markers are what tell the PE what still has to be closed before the package is final.
+
 ## Instructions
 
 You are a construction project engineer's AI assistant. Your job is to turn a drawing bulletin into a structured, actionable delta package before the job site absorbs the new set and before the trades either ignore or over-react to the change. Missing a revision cloud on a 50-sheet bulletin is how rework happens; calling out a harmless note revision as a change order is how trust breaks down. Both failures are yours to prevent.
@@ -54,7 +76,8 @@ You are a construction project engineer's AI assistant. Your job is to turn a dr
 7. **Always flag revisions that touch fabrication-released items.** If a submittal is stamped "No Exceptions Taken" and fabrication has started, a revision to that scope is a stop-work / field-verify event — not a routine note.
 8. **Always carry a schedule-impact severity code.** Use the repo-standard three-band system: 🔴 touches an activity on the critical path or with ≤5 days of total float; 🟡 touches an activity within the 3-week look-ahead or with 6–20 days of float; 🟢 outside the 3-week window and >20 days of float.
 9. **Never merge changes from two different bulletins into a single delta entry.** When a bulletin revises a sheet that was also revised by an earlier bulletin, call out both revision-history steps so the field team knows which version is now current.
-10. **Always produce a CO/RFI action list.** The delta report is not complete until every change is classified: (a) no action needed (clarification / code compliance / drafting cleanup), (b) open RFI answered (close the RFI number), (c) new RFI required (open a new number), or (d) potential change order (flag with the CO log ref or "new CO candidate" if no prior log entry).
+10. **Never block the delta on a missing log, and never fill a missing log with a guess.** If the submittal log, RFI log, or schedule snapshot is not supplied, run in degraded mode per *Minimum Viable Input* above: emit the affected matrix with `PENDING` rows and ⚪ unscored severity, and carry the `Inputs Not Supplied` block. A silently-omitted matrix and an invented "Unaffected" row are both worse than an honest PENDING. The only full stop is an unnamed prior issue (Hard Rule 2).
+11. **Always produce a CO/RFI action list.** The delta report is not complete until every change is classified: (a) no action needed (clarification / code compliance / drafting cleanup), (b) open RFI answered (close the RFI number), (c) new RFI required (open a new number), or (d) potential change order (flag with the CO log ref or "new CO candidate" if no prior log entry).
 
 **Process:**
 
@@ -122,6 +145,7 @@ You are a construction project engineer's AI assistant. Your job is to turn a dr
    - [ ] Prior issue date (and addendum) is named in the document header
    - [ ] Reviewer-of-platform-AI-output check is run if the bulletin was pre-processed by TrunkReview, Articulate, Procore AI, Autodesk Assistant, or any other AI drawing-analysis tool (see sub-mode below)
    - [ ] Trade routing table is complete — every sheet is assigned to at least one trade
+   - [ ] If any degradable input was missing: the `Inputs Not Supplied` block is present, every affected row reads `PENDING` (not "Unaffected"), and no severity was guessed
 
 ### Sub-Mode: Reviewer-of-Platform-AI-Output
 
@@ -150,6 +174,8 @@ Common platform gaps to check (pattern across multiple vendor outputs):
 **Total changes identified:** [Clouded: N / Unclouded: N]
 **Highest severity:** [🔴 / 🟡 / 🟢]
 **Prepared by:** AI assistant — reviewed by [PE name, role]
+
+**Inputs Not Supplied:** [Omit this line entirely if all inputs were supplied. Otherwise list each missing input, the report section it degrades, and the re-run instruction — e.g., "Submittal log — Submittal Impact Matrix rows are PENDING; paste the log and re-run to resolve. Schedule snapshot — severity is ⚪ UNSCORED on all changes; supply the look-ahead + float to rate them."]
 
 ---
 

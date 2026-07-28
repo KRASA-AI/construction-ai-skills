@@ -5,7 +5,7 @@ tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~20-40 min/update"
 version: 2.1
-last_eval_score: null
+last_eval_score: 9.2
 ---
 
 # 🏡 Owner Update Drafter (Residential + Commercial)

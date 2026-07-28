@@ -5,6 +5,7 @@ tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~20-30 min/meeting"
 version: 3.1
+last_eval_score: 9.2
 ---
 
 # 📋 Meeting Summarizer

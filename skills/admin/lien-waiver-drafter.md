@@ -5,7 +5,7 @@ tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~30-45 min per waiver package"
 version: 1.1
-last_eval_score: null
+last_eval_score: 9.2
 ---
 
 # 🖋️ Lien Waiver Drafter

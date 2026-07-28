@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~2-3 hrs/week on pull-plan prep"
-version: 1.1
-last_eval_score: 9.1
+version: 1.2
+last_eval_score: 9.2
 ---
 
 # 📅 Look-Ahead Schedule Critique
@@ -30,6 +30,27 @@ Provide the following:
 6. **Site conditions** — Weather forecast for the window, any active site events (a tower crane move, a concrete pour, a utility shutdown), and current site access limits
 7. **Project context** — Delivery method, contract form, any active contractual deadlines (liquidated damages milestone, phased turnover, substantial completion), and active acceleration or recovery plan if one is in place
 8. **Scope special cases** — Inspections, commissioning activities, live-tie-ins, night / weekend work, or owner-access days that require special coordination
+
+### Minimum Viable Input — critique what you have; do not send the super away for more paperwork
+
+This skill is used at 6:15 AM on a Monday, or Friday afternoon while the pull-plan board is still up. A superintendent who is asked for eight complete inputs before receiving a single flag will close the window and run the meeting from memory. **Run on the minimum, flag the blind spots, and say what each missing input would have added.** A critique that surfaces four real constraints and honestly names its two blind spots beats a critique that never gets produced.
+
+**Blocking inputs (2):**
+
+- **Look-ahead horizon + start date (#1)** and **activity list for the window (#2)**. There is no critique without activities. If the activity list has no float or predecessor data, that is fine — see the degradation table; but there must be a list of what the trades intend to do, with dates and responsible trades.
+
+**Degradable inputs (6) — run without them, in degraded mode:**
+
+| Missing input | Degraded behavior — do exactly this |
+|---|---|
+| **Constraint log (#3)** | Do not skip constraint readiness — **derive** it. Run every activity against the 11-category taxonomy in `knowledge-base/best-practices/scheduling-look-ahead.md` and emit the constraint-readiness table with status **❓ UNVERIFIED** (not 🟢) for each category the activity plausibly depends on, phrased as a question to close in the pull-plan ("Steel stud delivery for A-1120 — confirmed on site? No constraint log supplied."). This is often *more* useful than the log, because it asks the question the log forgot. Never mark an activity 🟢 ready on an unsupplied log. |
+| **Crew / resource plan (#4)** | Skip the quantitative crew-balance math (do not invent headcount). Instead flag **structural** stacking risk only — activities by different trades scheduled in the same work face on the same day, which is readable from the activity list alone — and add one line: "Crew loading unverified; supply headcount by trade by day to get production-rate and split-crew analysis." |
+| **Recent PPC / RNC (#5)** | Omit the trend read. Recommend the config PPC target rather than an observed-performance-adjusted one, and say so explicitly: "PPC target = [config default]; no recent PPC/RNC supplied, so this is not adjusted for observed performance." |
+| **Site conditions / weather (#6)** | Still flag every weather-exposed activity in the window (exterior concrete, membrane roofing, envelope, grading, crane picks) as **weather-exposed, forecast not supplied** with the recommended contingency action. The exposure is a property of the activity, not the forecast. |
+| **Project context (#7)** | Omit the LD / milestone / acceleration framing. Note that near-critical flags are un-weighted by contractual consequence. |
+| **Scope special cases (#8)** | Proceed. Add the standing prompt to the pull-plan questions list: "Any inspections, live tie-ins, night work, or owner-access days in this window that aren't on the activity list?" |
+
+**Whenever any degradable input is absent, the briefing MUST open with a `Blind Spots` line** (one line, under the header, above the top concerns): the missing inputs, and — in the same breath — what each would unlock. Keep it to one line; the super has two minutes. The critique still ships.
 
 ## Instructions
 
@@ -81,7 +102,9 @@ You are a pull-plan-experienced AI assistant critiquing a look-ahead on behalf o
 
 **Output requirements:**
 - One page, skimmable in 2 minutes by a superintendent at 6:15 AM
+- A one-line `Blind Spots:` header line whenever any degradable input was not supplied — naming each missing input and what it would unlock (omit the line entirely when all eight inputs are supplied)
 - Specific, not generic — every flag tied to an activity ID
+- Never a 🟢 or a ready-status derived from an input that was not supplied — use ❓ UNVERIFIED and phrase it as a pull-plan question
 - Prioritized (safety → near-critical → resource → handoff → weather → other)
 - Distinguishes commitments the team controls from external dependencies (owner decision, AHJ response, utility shutdown, manufacturer ship date)
 - Includes a disclaimer that this is an AI-assisted critique and does not replace a licensed scheduler's TIA, a formal CPM update, or a field-walked constraint log

@@ -5,7 +5,7 @@ tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~8-12 hrs/project"
 version: 2.0
-last_eval_score: null
+last_eval_score: 9.2
 ---
 
 # 📬 ITB Package Drafter

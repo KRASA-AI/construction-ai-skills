@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~30-45 min/walkthrough"
-version: 3.3
-last_eval_score: null
+version: 3.4
+last_eval_score: 9.3
 ---
 
 # ✅ Punch List Organizer
@@ -27,7 +27,7 @@ Provide the following:
    - **Typed notes** — A bulleted or paragraph list of items captured during or after the walk
    - **Voice-memo transcript** — Verbatim transcript from the PM's phone voice memo, walkie talkie capture, or BuildPass/SpaceCapture/Procore voice-note export. Expect missing punctuation, room-changes inside a single sentence, repeated items, "uh / um / scratch that," and trade-vocabulary errors (e.g., "the drywall guys" → ABC Drywall). The skill must split the transcript into discrete items, drop fillers, and reconcile repeats
    - **Platform export** — CSV or table from Procore Punch, BuildPass, SpaceCapture, or a Bluebeam Punch markup CSV; columns vary by tool but typically include item description, location, photo reference, timestamp. The skill normalizes columns and re-classifies severity / trade per the rules below
-3. **Current subcontractor list** — Which trades are on this project and who to assign items to (e.g., "ABC Drywall, XYZ Paint, Bright Electric, Sanchez Plumbing, Tile-Pro")
+3. **Current subcontractor list** — Which trades are on this project and who to assign items to. **You usually do not need to provide this** — the skill defaults to the firm's named subs per trade from `firm_identity.standard_subs` and self-performed trades from `firm_identity.self_perform_trades`. Supply an override only for this-project subs that differ from the firm's standard roster (e.g., "drywall on this job is Metro Interiors, not our usual Premier Drywall")
 4. **Substantial completion target date** — What date these items must be complete by for the project to hit substantial completion (or for retainage release or warranty close-out, depending on walk type)
 5. **Room/area list or floor plan reference** — So items can be grouped consistently (unit 201, corridor 2N, lobby, roof, etc.)
 6. **Photo file references** — If photos are available, a way to reference them (e.g., "photo #047" or "IMG_2031.jpg") so each item can be traced to evidence. Voice-memo captures often have photos with timestamps that align to the audio; if so, ask for the photo-timestamp mapping
@@ -39,7 +39,8 @@ You are a construction close-out AI assistant. Punch lists are high-friction —
 
 **Before you start:**
 - Load `config.yml` from the repo root and apply these defaults so the user does not have to re-state them each walk:
-  - **`company_name`, `pm_contact`, `super_contact`, `standard_sub_list`, `severity_scheme`** — basic header + assignment defaults.
+  - **`company_name`, `pm_contact`, `super_contact`, `severity_scheme`** — basic header defaults.
+  - **`firm_identity.standard_subs` + `firm_identity.self_perform_trades`** — the named sub per trade and the trades the firm self-performs. **Weave these into the Trade / Responsible party column, do not just hold them as a list.** Resolve every colloquial trade name ("the drywall guys," "the painters," "Mike's crew") straight to the firm's actual named sub from the roster (e.g., Premier Drywall, ColorPro Finishes) so the by-trade view groups items under the company that will actually get the callback — and tag any item on a self-performed trade as "self-perform" so the super sees at a glance which fixes are the firm's own crew vs. a sub's. This makes item #3 below (the per-walk subcontractor list) a config default the user rarely needs to supply, and it is what lets each sub's slice of the list go out the door without a manual re-assignment pass.
   - **`standard_punch_platform`** (Procore Punch / BuildPass / SpaceCapture / Bluebeam Punch / typed / voice) — assume this input shape and column layout by default, so platform-export normalization runs without asking "which tool exported this?" Only confirm the shape if the pasted data clearly does not match the configured platform.
   - **`punch_completion_lead_time`** — the firm's standard required-by lead time before Substantial Completion (default 10 working days if unset). Use the configured value, not the generic default, on every non-safety item.
   - **`warranty_defaults_by_project_type`** — the firm's standard warranty terms so the warranty-vs-punch carve-out (step 6) uses real numbers instead of generic ones. Typical config shape: residential remodel = 1-yr workmanship + NAHB tolerances; commercial TI = 1-yr per A201-2017 §12.2.2 + 2-yr roofing membrane per NRCA + mfr equipment warranties per submittal; institutional / public = per the project's supplementary conditions. If a project type's warranty term is configured, cite the configured term when tagging an item "Warranty," not the generic A201 default.
@@ -72,7 +73,7 @@ You are a construction close-out AI assistant. Punch lists are high-friction —
    - **Item number** — Sequential, project-wide unique ID
    - **Location** — Building, floor, room number or name, specific location within the room (e.g., "Unit 201, Bathroom 2, above vanity")
    - **Description** — What is wrong or missing, in plain language, specific enough that anyone reading it can find the condition without a guide (not "paint issue" — "3-inch scuff on north wall near light switch, paint needs touch-up")
-   - **Trade / Responsible party** — Assign to the sub or self-perform trade that owns the fix. If it's unclear (e.g., cracked tile could be tile installer or could be plumbing back-damage), flag it for PM decision.
+   - **Trade / Responsible party** — Assign to the **firm's actual named sub for that trade** (from `firm_identity.standard_subs`, e.g., "Premier Drywall") or, for a self-performed trade, to the firm's own crew tagged "self-perform" (from `firm_identity.self_perform_trades`) — not a generic trade label. If the responsible trade itself is unclear (e.g., cracked tile could be Tile-Pro's setting or plumbing back-damage from Sanchez Plumbing), name both candidate parties and flag it for PM decision. Only leave a party unresolved when no roster match exists.
    - **Severity / Type** — Cosmetic / functional / safety / missing work / warranty item. Use this categorization because it drives priority and close-out treatment.
    - **Required completion date** — Default to 10 working days before substantial completion unless project-specific guidance says otherwise
    - **Photo reference** — Link to the photo file name or number if provided
@@ -137,7 +138,7 @@ SIGN-OFF
 
 **Output requirements:**
 - One defect per row — never combine multiple fixes into one item
-- Every item has a clear trade owner OR is explicitly flagged for PM assignment decision
+- Every item has a clear trade owner — resolved to the firm's **named sub** from the roster or tagged **self-perform** — OR is explicitly flagged for PM assignment decision. Close with a one-line **"Applied config"** footer naming the roster used (e.g., "Applied config: assigned from standard_subs — Premier Drywall, ColorPro Finishes, Bright Electric, Sanchez Plumbing, Tile-Pro; self-perform trades tagged") so a wrong or stale roster assumption is visible rather than silent
 - Safety items called out separately at the top
 - Location descriptions are specific enough to find the condition without a tour guide
 - Items that are not really punch items (COs, warranty, RFIs) are carved out so the punch list isn't padded

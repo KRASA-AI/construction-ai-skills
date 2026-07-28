@@ -5,7 +5,7 @@ tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~45 min/plan"
 version: 3.1
-last_eval_score: null
+last_eval_score: 9.2
 ---
 
 # 🦺 Safety Plan Builder

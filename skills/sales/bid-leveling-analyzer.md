@@ -5,7 +5,7 @@ tools: [claude, chatgpt]
 difficulty: advanced
 time_saved: "~4-10 hrs/bid package"
 version: 1.0
-last_eval_score: null
+last_eval_score: 9.2
 ---
 
 # 📊 Bid Leveling Analyzer

@@ -5,7 +5,7 @@ tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~60-90 min/proposal"
 version: 2.0
-last_eval_score: null
+last_eval_score: 9.3
 ---
 
 # 📄 Bid Proposal Generator

@@ -5,7 +5,7 @@ tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~90-120 min/month per WIP cycle"
 version: 1.0
-last_eval_score: null
+last_eval_score: 9.2
 ---
 
 # 📊 WIP & Over/Under Billing Reviewer

@@ -5,7 +5,7 @@ tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~10-15 min/email"
 version: 3.1
-last_eval_score: null
+last_eval_score: 9.3
 ---
 
 # ✉️ Email Drafter

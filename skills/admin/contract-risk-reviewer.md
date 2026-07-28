@@ -5,7 +5,7 @@ tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~45-90 min/contract"
 version: 1.2
-last_eval_score: null
+last_eval_score: 9.3
 ---
 
 # ⚠️ Contract Risk Reviewer

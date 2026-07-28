@@ -5,7 +5,7 @@ tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~20-30 min/estimate"
 version: 2.1
-last_eval_score: null
+last_eval_score: 9.3
 ---
 
 # 💰 Estimate Simplifier
