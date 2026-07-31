@@ -4,7 +4,7 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~4-8 hrs/bulletin"
-version: 1.2
+version: 1.3
 last_eval_score: 9.2
 ---
 
@@ -160,6 +160,7 @@ Common platform gaps to check (pattern across multiple vendor outputs):
 5. **Schedule severity.** Platform tools do not have access to the project schedule. Add 🔴 / 🟡 / 🟢 severity flags manually against the look-ahead.
 6. **Trade routing.** Platform outputs are typically organized by sheet number, not by trade. Reorganize into the per-trade delta summary format.
 7. **Structural/MEP technical calls.** Platform outputs for structural and MEP revisions often state the change without flagging that an engineer must verify field applicability. Add the "competent person / EOR to verify" flag.
+8. **Flat-text extraction blind spot.** Two independent 2026 data points now agree on this failure mode: an academic multimodal benchmark found general-purpose agents converge on pulling extractable text from a sheet and discarding what is only drawn (dimensions inside details, callout geometry, hatching, revision clouds), and a drawing-AI vendor's own published accuracy comparison put a leading general-purpose model at roughly a quarter of its purpose-trained model's accuracy on a basic visual-symbol-detection task (vendor-reported, unaudited — treat as directional). The practical test is the same regardless of which platform produced the delta: does the platform's output contain at least one finding that could **only** have come from reading the sheet graphically (a dimension change inside a detail, a hatch/fill change denoting a material swap, a symbol relocation with no accompanying note)? If every finding in the platform's delta could have been produced from the sheet's extractable text alone, treat the unclouded-change coverage (item 1, above) as unverified regardless of what the platform claims, and prioritize a manual full-set comparison of the highest-risk sheets before distribution.
 
 **Output requirements:**
 

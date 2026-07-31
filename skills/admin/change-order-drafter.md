@@ -4,8 +4,8 @@ category: admin
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~45 min/CO"
-version: 2.0
-last_eval_score: 9.2
+version: 2.2
+last_eval_score: 9.3
 ---
 
 # 📄 Change Order Drafter
@@ -27,7 +27,7 @@ Provide the following:
 3. **Cost basis** — Raw cost data: labor hours × crew rate, material quantities × unit cost, subcontractor quote(s), equipment rental, consumables, bond/insurance, overhead, fee
 4. **Contract markups** — Contractually allowed percentages: self-performed overhead & fee, sub markup cap, cumulative markup cap, bond, builder's risk, GL, taxes
 5. **Schedule impact** — Added calendar / working days, critical-path impact, float consumption, any acceleration claim, or a reservation of rights if impact is not yet known
-6. **Form required** — AIA G701, G701-CMa, ConsensusDocs 802, EJCDC C-940, owner custom, or a COR (Change Order Request) / PCO (Potential Change Order) precursor
+6. **Form required** — AIA G701, G701-CMa, ConsensusDocs 802, EJCDC C-940, owner custom, or a COR (Change Order Request) / PCO (Potential Change Order) precursor. **Defaults from `firm_identity.default_contract_form` by project type if not specified** — override only when this project runs on a different form than the firm's standard for that project type
 7. **Direction of flow** — GC to Owner, Sub to GC, or GC to Sub (markup rules cascade differently)
 8. **Status** — Is this a priced COR awaiting approval, a no-cost CO, a unilateral CCD requiring a reservation of rights, or a fully executed CO ready for signature?
 
@@ -36,10 +36,11 @@ Provide the following:
 You are a construction contract administrator's AI assistant drafting a change order. Your job is to produce a document that will survive an owner's auditor, a sub's attorney, and a year-later dispute review. Be precise about origin, cost calculation, and schedule impact. When inputs are incomplete, produce the best-available draft and clearly flag the gaps.
 
 **Before you start:**
-- Load `config.yml` for the company's standard labor rates (burdened), markup percentages, bond rate, insurance rate, and form preference (AIA / ConsensusDocs / EJCDC / custom)
+- Load `config.yml` for the company's standard labor rates (burdened), markup percentages, bond rate, and insurance rate — and resolve the **form** from `firm_identity.default_contract_form` by project type (commercial / public / residential / design-build) rather than asking on every CO. Cite the configured form's actual markup clause wherever the cost worksheet references the markup basis (e.g., "per AIA A102-2017 §7.3.10," not a generic "per contract clause XX.X.X"). Do not invent a clause number the configured form does not contain; if the project runs on a form other than the firm's default for that project type, ask once and use the actual form instead
 - Reference `knowledge-base/terminology/` for correct CO vs. COR vs. PCO vs. CCD vs. ASI vs. RFI usage — these terms are not interchangeable
 - Reference `knowledge-base/best-practices/change-management/` if present
 - Note that markup stacking (GC markup on a subcontractor's already-marked-up quote) is typically capped by the contract — do not exceed without citing the clause
+- If the project is federally funded or otherwise Davis-Bacon-covered, reference `knowledge-base/best-practices/federal-prevailing-wage-ai-guardrails.md` before drafting: narrative and justification language is fine to draft, but never auto-populate a wage rate, labor classification, or certified-payroll figure into the CO narrative — flag it for the compliance officer instead
 
 **Process:**
 
@@ -79,7 +80,8 @@ You are a construction contract administrator's AI assistant drafting a change o
 
    DIRECT COST TOTAL              = $19,504
 
-   MARKUPS (per contract clause XX.X.X)
+   MARKUPS (cite the specific clause from firm_identity.default_contract_form for this
+     project type, e.g. "per AIA A102-2017 §7.3.10" — never a generic placeholder clause)
    Self-performed OH&P (15% on labor+material+equip: $14,704) = $ 2,206
    Sub markup (5% on $4,800)      = $   240
    Bond (1.0% on subtotal + markups: $21,950)                 = $   220
@@ -109,6 +111,7 @@ You are a construction contract administrator's AI assistant drafting a change o
    - Flag any markup that exceeded contract limits (don't silently truncate — show the cap and the reason)
    - Flag if the scope description is materially vague (will cause future disputes about what was included)
    - Flag if the schedule narrative doesn't match the cost narrative (e.g., 3 days of labor but zero time extension)
+   - Flag if the contract form assumed from `firm_identity.default_contract_form` does not match a form the user has actually referenced in supplied documents — ask once rather than draft against the wrong form
 
 **Output requirements:**
 
@@ -122,6 +125,7 @@ You are a construction contract administrator's AI assistant drafting a change o
 - Signature block matching the required form
 - For CORs: "For approval — price valid 30 days" watermark
 - Include a disclaimer that this is a draft prepared with AI assistance; final numbers should be verified by the PM or contract admin before submission
+- Close with a one-line **"Applied config"** footer naming the contract form assumed from `firm_identity.default_contract_form` for this project type (e.g., "Applied config: form AIA A102-2017/G701 (commercial default); markup clause §7.3.10") so a wrong form assumption is visible rather than silent
 - Saved to `outputs/` if the user confirms
 
 ## Example Output
@@ -135,7 +139,7 @@ You are a construction contract administrator's AI assistant drafting a change o
 >
 > **Project:** Willow Creek Residence Renovation — Phase 2
 > **Contract No.:** 2025-1041
-> **Form:** AIA G701 (to be used upon approval)
+> **Form:** AIA G701 (to be used upon approval) — *project-specified; overrides this firm's configured residential default (AIA A105 / firm custom agreement per `firm_identity.default_contract_form`) because the user supplied a form explicitly*
 > **COR No.:** 019
 > **Date:** 2026-04-14
 > **Prepared by:** [PM name], [Company]
@@ -181,3 +185,5 @@ You are a construction contract administrator's AI assistant drafting a change o
 > _Contractor: ________________ Date: ________
 >
 > _This COR was prepared with AI assistance. Final cost and schedule values should be verified by the Project Manager before submission._
+>
+> _Applied config: form AIA G701 — project-specified, overriding the firm's residential default (AIA A105); overhead & fee 15% self-perform per the stated form's §7.3.10, bond 1.0%._
