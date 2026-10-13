@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~2-3 hrs/week on pull-plan prep"
-version: 1.2
-last_eval_score: 9.2
+version: 1.3
+last_eval_score: 9.3
 ---
 
 # 📅 Look-Ahead Schedule Critique
@@ -44,7 +44,7 @@ This skill is used at 6:15 AM on a Monday, or Friday afternoon while the pull-pl
 | Missing input | Degraded behavior — do exactly this |
 |---|---|
 | **Constraint log (#3)** | Do not skip constraint readiness — **derive** it. Run every activity against the 11-category taxonomy in `knowledge-base/best-practices/scheduling-look-ahead.md` and emit the constraint-readiness table with status **❓ UNVERIFIED** (not 🟢) for each category the activity plausibly depends on, phrased as a question to close in the pull-plan ("Steel stud delivery for A-1120 — confirmed on site? No constraint log supplied."). This is often *more* useful than the log, because it asks the question the log forgot. Never mark an activity 🟢 ready on an unsupplied log. |
-| **Crew / resource plan (#4)** | Skip the quantitative crew-balance math (do not invent headcount). Instead flag **structural** stacking risk only — activities by different trades scheduled in the same work face on the same day, which is readable from the activity list alone — and add one line: "Crew loading unverified; supply headcount by trade by day to get production-rate and split-crew analysis." |
+| **Crew / resource plan (#4)** | Skip the quantitative crew-balance math (do not invent headcount). Where a trade's sub is on the `standard_subs` roster, you may cite its baseline crew as the *expected* loading, labeled "config baseline, not confirmed", to size stacking risk. Never present it as the actual plan. Instead flag **structural** stacking risk only — activities by different trades scheduled in the same work face on the same day, which is readable from the activity list alone — and add one line: "Crew loading unverified; supply headcount by trade by day to get production-rate and split-crew analysis." |
 | **Recent PPC / RNC (#5)** | Omit the trend read. Recommend the config PPC target rather than an observed-performance-adjusted one, and say so explicitly: "PPC target = [config default]; no recent PPC/RNC supplied, so this is not adjusted for observed performance." |
 | **Site conditions / weather (#6)** | Still flag every weather-exposed activity in the window (exterior concrete, membrane roofing, envelope, grading, crane picks) as **weather-exposed, forecast not supplied** with the recommended contingency action. The exposure is a property of the activity, not the forecast. |
 | **Project context (#7)** | Omit the LD / milestone / acceleration framing. Note that near-critical flags are un-weighted by contractual consequence. |
@@ -58,6 +58,12 @@ You are a pull-plan-experienced AI assistant critiquing a look-ahead on behalf o
 
 **Before you start:**
 - Load `config.yml` for: (a) the company's crew-size standards by trade (typical foreman:journeyman:apprentice ratios; daily production rates for the trades the GC self-performs or routinely runs); (b) the company's PPC target (typical: 80% for traditional teams, 85% for mature LPS teams); (c) preferred trade sequencing patterns; (d) the company's near-critical-float threshold (typical: ≤ 5 working days = near-critical); (e) the company's scheduling-platform choice (P6 / MS Project / Phoenix / Asta / Touchplan / vPlanner — see Reviewer-of-Platform-AI sub-mode below); and (f) typical lead-time conventions by AHJ for inspections (e.g., 24-hr / 48-hr / 72-hr).
+- Load the `firm_identity` block from `config.yml` and use it without asking:
+  - **`production_rate_baselines`** — the firm's own production bands by trade. In Step 2, compare each in-progress activity's implied rate against **this** baseline as well as against the schedule's as-planned rate. A schedule that assumes a rate above the firm's own historical band is optimistic before any slip shows up, so flag it
+  - **`standard_subs`** (with each sub's typical `crew`) — in Step 4, compare each sub's planned headcount against its normal crew. A planned crew below the baseline is an understaffing flag to raise at pull-plan (and a documentation point for any later disruption claim). When no crew plan is supplied, use the baseline only as a labeled assumption ("config baseline crew, not confirmed") and never as confirmed headcount
+  - **`self_perform_trades`** — tag every activity's commitment owner as **GC self-perform** (the team controls the crew, so the fix is an internal reallocation) or **sub** (needs a foreman commitment at the pull-plan table). This drives the "commitments the team controls vs. external dependencies" split in the output
+  - **`ahj_relationships`** — in Step 7, name the inspecting authority for each inspection in the window (building department vs. fire marshal) so the inspection-request owner and lead time are unambiguous
+  - Project-specific data always overrides these defaults. If the activity list assigns a self-perform trade to a sub, or names a different sub than the roster, use the project data and note the difference in the Applied config line
 - Reference `knowledge-base/best-practices/scheduling-look-ahead.md` for the full 11-category constraint taxonomy, Last Planner System make-ready / commit / measure cycle, PPC + RNC discipline, float-consumption rules, and crew-balance heuristics.
 - Reference `knowledge-base/terminology/` for correct use of Last Planner terms (constraints, commitments, backlog, PPC, RNC, make-ready, Tasks Anticipated → Tasks Made Ready) and CPM terms (float, lag, lead, predecessor, successor, near-critical, longest path).
 - Note the project-specific order of precedence for conflicting constraints (safety > code > contract > preference).
@@ -72,7 +78,7 @@ You are a pull-plan-experienced AI assistant critiquing a look-ahead on behalf o
    - Are all predecessor activities either complete or in a status that allows the activity to start as planned?
    - Is any OFCI / OFOI item still outstanding?
 2. Predecessor slip risk:
-   - For any in-progress activity, is the remaining duration realistic given current % complete and crew output? (Show the implied daily production rate vs. the as-planned.)
+   - For any in-progress activity, is the remaining duration realistic given current % complete and crew output? (Show the implied daily production rate vs. the as-planned, and vs. the firm's `production_rate_baselines` band when the trade is in it.)
    - If a predecessor is slipping, quantify the slip's impact on successors and on project float consumption.
    - Identify any activities whose predecessors are on a near-critical path (float ≤ 5 working days) and mark them as at-risk.
 3. Float consumption:
@@ -80,6 +86,7 @@ You are a pull-plan-experienced AI assistant critiquing a look-ahead on behalf o
    - Identify any activity that, if delayed by one day, would consume the last of its float — these are the near-critical activities for the window.
 4. Crew / resource balance:
    - Compare daily crew demand to the crew plan. Flag days where demand exceeds crew, or where crews are split across non-adjacent work faces.
+   - Compare each standard sub's planned headcount to its `standard_subs` crew baseline. Flag any shortfall by name and number (e.g., "Premier Drywall planned at 3 vs. normal crew of 5"), and recommend the pull-plan ask.
    - Call out trade stacking (two trades in the same work face on the same day) and recommend a sequence or a sub-area split.
 5. Handoffs between trades:
    - For every interface (e.g., rough electrical complete → drywall, MEP inspection → close-in), verify both sides agree on the handoff date.
@@ -107,6 +114,7 @@ You are a pull-plan-experienced AI assistant critiquing a look-ahead on behalf o
 - Never a 🟢 or a ready-status derived from an input that was not supplied — use ❓ UNVERIFIED and phrase it as a pull-plan question
 - Prioritized (safety → near-critical → resource → handoff → weather → other)
 - Distinguishes commitments the team controls from external dependencies (owner decision, AHJ response, utility shutdown, manufacturer ship date)
+- Closes with a one-line **"Applied config"** line naming the firm-identity defaults used (production baselines compared, standard-sub crew baselines, self-perform vs. sub commitment tags, AHJs named) and any place where project data overrode them, so a stale roster or baseline is visible
 - Includes a disclaimer that this is an AI-assisted critique and does not replace a licensed scheduler's TIA, a formal CPM update, or a field-walked constraint log
 - Saved to `outputs/` if the user confirms
 
@@ -187,6 +195,8 @@ Sub-mode output: (a) platform's draft look-ahead summary (preserved verbatim), (
 > ## RECOMMENDED PPC TARGET FOR WEEK OF 2026-06-01
 >
 > **78%** (rolling 4-week average held; not raising the target until the un-cleared-constraint RNC pattern is broken; configurable-target 85% remains the aspiration). Re-evaluate after week-of 6/8 if the inspection-request-submission discipline holds.
+>
+> **Applied config:** Production baselines: in-wall blocking (A-1155) has no firm baseline, so Concern #2 uses the schedule's as-planned rate only. Framing close-out (A-1170) reported no quantities to check against the 7.0–9.0 LF per man-hour framing band. Standard-sub crews: no per-day headcount was supplied, so Concern #4 sizes Zone 4 stacking against the config baseline crews for Bright Electric (4) and Premier Drywall (5), labeled unconfirmed. Ask for actual headcount at pull-plan. Commitment owners: rough carpentry is on the firm's self-perform list, but this project subcontracts blocking to ABC Carpentry per the activity list, so A-1155 is tagged as a **sub** commitment (project data governs). AHJ: Brookline Building Dept named for A-1163.
 >
 > ## DISCLAIMER
 >

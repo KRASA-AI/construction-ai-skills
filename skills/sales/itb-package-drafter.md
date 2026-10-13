@@ -4,8 +4,8 @@ category: sales
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~8-12 hrs/project"
-version: 2.0
-last_eval_score: 9.2
+version: 2.1
+last_eval_score: 9.3
 ---
 
 # 📬 ITB Package Drafter
@@ -44,6 +44,12 @@ You are a construction estimator / precon assistant helping a GC release a clean
 - Reference `knowledge-base/terminology/` for CSI division names and trade scope boundaries
 - Reference `knowledge-base/best-practices/` for the GC's standard front-end terms, safety prequal, and exclusions list
 - Reference `knowledge-base/regulations/lien-waivers-by-state.md` if the project state has mandatory statutory waiver forms — surface in the front-end terms
+- Load the `firm_identity` block from `config.yml` and apply it without asking:
+  - **`self_perform_trades`** — scopes the firm performs with its own forces are **not** released as ITBs by default. List them in the master index as "GC self-perform — no ITB," and still write the scope-handoff boundary into every adjacent sub package (e.g., if the GC self-performs rough carpentry, the framing ITB must say blocking and backing are excluded and by GC)
+  - **`standard_subs`** — for each package whose trade matches a roster entry, pre-seed that sub as the first name on the invite list and mark it "(standard sub)". The standard sub counts as **one** of the minimum three bidders, never as a sole-source rationale
+  - **`default_contract_form`** — name the subcontract form the awarded sub will sign, derived from the prime form for this project type (e.g., A102/A201 prime → A401 subcontract; EJCDC C-700 public prime → the agency-required flow-down subcontract), in the submission checklist and the closing disclaimer, so subs price the flow-down terms they will actually sign
+  - **`ahj_relationships`** — for permit- and inspection-driven trades (fire alarm, fire sprinkler, med-gas, electrical, plumbing), name the inspecting authority in the site-conditions bullet so the sub prices inspection coordination with the right office
+  - Project-specific inputs always override these defaults. When the user's trade list releases a self-perform scope or leaves out a standard sub, do not silently "correct" it; flag it in the risk/gap summary
 - If a bid-package breakdown is not provided, propose one based on scope size and typical sub specialization (avoid overlapping scopes); see Step 1 for the breakdown decision logic
 
 **Hard rules — do not break:**
@@ -57,11 +63,13 @@ You are a construction estimator / precon assistant helping a GC release a clean
 - Never publish bond / insurance / EMR thresholds higher than the prime contract requires unless the GC has stated the reason; over-restrictive thresholds shrink the bidder pool with no upside
 - Always cite the controlling spec section number and the controlling drawing sheets in the scope summary — generic "framing per plans" is a textbook scope-overlap failure mode
 - For public ITB / IFB sub packages, mirror any agency-prescribed front-end requirements (certified payroll, prevailing wage, DBE participation, Buy America, anti-collusion) into the sub ITB so the prime's responsiveness is preserved
+- Never treat the firm's standard sub as a reason to invite fewer than 3 bidders, and never tell any bidder who the standard sub is. The roster only seeds the invite list; it is not an award preference stated in the ITB
+- Never invent a subcontract form or flow-down clause that is neither in the configured default form nor in the user's documents. If the prime form is unknown and no config default applies, ask once
 - For CMAR sub-buyout, the ITB is open-book; flag if the buyout is below the GMP line item (savings to the shared-savings split) or above (CO request)
 
 **Process:**
 
-1. **Pick the trade-package breakdown** if not provided. Use the size-band heuristic and the scope-handoff matrix below.
+1. **Pick the trade-package breakdown** if not provided. Use the size-band heuristic and the scope-handoff matrix below. Remove the firm's `self_perform_trades` from the released packages first (they become "GC self-perform — no ITB" rows), then size the remainder.
 
    **Size-band heuristic:**
 
@@ -118,6 +126,7 @@ You are a construction estimator / precon assistant helping a GC release a clean
    - Scopes with ambiguous handoffs between trades — every entry from the scope-handoff matrix that touches this project should be confirmed in writing
    - Specs not yet issued or sheets missing from the drawing index
    - Bond or insurance requirements that will shrink the bidder pool (warn, don't auto-remove)
+   - Config mismatches: a released package that is on the firm's self-perform list (confirm it is intentional, e.g., a specialty certification the in-house crew lacks), or a package whose trade has a standard sub who is not on the invite list
    - For public ITB sub packages: any agency-prescribed front-end requirement (certified payroll, prevailing wage, DBE participation, Buy America, anti-collusion) not yet mirrored into the sub ITB
 
 8. Run the **coverage and responsiveness self-check** before release. For each item, the answer must be yes:
@@ -129,6 +138,7 @@ You are a construction estimator / precon assistant helping a GC release a clean
    - [ ] Bond / insurance / EMR thresholds match (not exceed) the prime contract
    - [ ] For public ITB sub packages, every agency-prescribed front-end item is mirrored
    - [ ] Bid portal link, GC contact, and CC list are populated in every email
+   - [ ] Self-perform scopes are either withheld from release or deliberately released with a stated reason, and every standard sub is invited to its trade package or its absence is explained
    - For any "no", flag in the risk/gap summary and recommend the corrective step before release
 
 **Output requirements:**
@@ -139,6 +149,7 @@ You are a construction estimator / precon assistant helping a GC release a clean
 - Plain-language scope text — no unexplained acronyms
 - Severity color-code in the risk/gap summary: 🔴 must resolve before release (missing specs, sub coverage <3 on critical-path trade, spec/sheet mismatch); 🟡 resolve before bid due (handoff ambiguity, addendum-window risk); 🟢 watch list (single-sub interest, regional-pool tightness)
 - Include a disclaimer that the ITB is a draft and must be reviewed by the lead estimator and approved by the PM before release
+- Close the package with a one-line **"Applied config"** footer naming the firm-identity defaults used (self-perform scopes withheld, standard subs seeded per package, subcontract form, AHJ named), so a stale roster or the wrong form is visible before release
 - Saved to `outputs/` if the user confirms
 
 ## Example Output
@@ -257,6 +268,7 @@ You are a construction estimator / precon assistant helping a GC release a clean
 > | 🟡 | Rated joint detail at U419 walls is a known punch-walk issue (see PM's notes from the Mt. Auburn MOB Phase 1 closeout); pricing must include the rated assembly at floor and deck | Pre-installation meeting required pre-mobilization with the awarded sub; flagged in Pkg 02 scope summary |
 > | 🟡 | Med-gas certification by certifying agency is OUT of Pkg 13 sub scope (vendor coordinates, certifying agency stamps); confirm owner's pricing assumption matches | Restate the boundary in Pkg 13 ITB |
 > | 🟡 | Demountable glass partition pool is at 3 (small market in MA: KI, Modernfold, Krug); single-source risk | Add Haworth Trio if licensed in MA; if not, hold and accept risk |
+> | 🟡 | Pkg 01 selective demolition is on Northwood's self-perform list (`firm_identity.self_perform_trades`), but the trade list supplied for this project releases it as an ITB | Confirm this is intentional. ICRA Class III/IV demo next to occupied suites may justify a specialty demo sub. If it is not intentional, pull Pkg 01 back to self-perform and restate the demo boundary in Pkgs 02, 09, and 10 |
 > | 🟢 | Bond requirement applies only to packages >$200k (mech, electrical, casework, demountable, med-gas) — communicated in respective ITBs | None |
 > | 🟢 | EMR ceiling 1.10 is project standard, not unusually tight | None |
 > | 🟢 | Pre-bid walk overlap with another active TI on Level 4 — coordinate with building manager for sign-in | Confirm with building security 2026-05-07 |
@@ -264,5 +276,7 @@ You are a construction estimator / precon assistant helping a GC release a clean
 > **Coverage and responsiveness self-check:** PASS with two 🔴 (Pkg 12 FA, Pkg 13 med-gas — both at coverage floor with stated rationale; recommend final outreach to confirm intent-to-bid). All scope summaries cite specific spec sections and drawing sheets. RFI deadline (2026-05-13) is 5 working days before bid due (2026-05-20). Sub-bid due date is on or after the prime's last addendum window (Addendum 2 was 2026-04-22). Bond / insurance / EMR thresholds match the prime contract. M/W/DBE goal of 12% mirrored in every ITB. Bid portal link, GC contact, and CC list populated in every email.
 >
 > ---
+>
+> _Applied config: standard subs seeded as 1 of N invitees for Pkg 02 (Premier Drywall), Pkg 04 (Floor-Tech), Pkg 05 (ColorPro Finishes), Pkg 09 (Summit Mechanical), Pkg 10 (Sanchez Plumbing), Pkg 11 (Bright Electric), Pkg 12 FS (RedLine Fire). Self-perform list checked: Pkg 01 demo released per project input (flagged above). Blocking (Pkg 06) and shop-built casework/millwork (Pkg 08) stay with subs as the project input assigns them. Subcontract form AIA A401-2017 derived from the commercial default (A102/A201). Fire marshal named as the inspecting authority in the Pkg 12 site-conditions bullet. Demo override flagged above._
 >
 > _ITB package drafted with AI assistance; reviewed by the lead estimator before release. The 13 trade ITBs in this package, the master bid calendar, and the risk/gap summary together constitute the bid-day release. Scope is governed by the contract documents (drawings, specifications, addenda) attached; the scope summaries in each ITB are for bidding convenience and do not modify the contract documents._
